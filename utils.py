@@ -106,8 +106,8 @@ def run_docker(docker_image, docker_image_id):
                         + "--ipc=host "\
                         + "--runtime nvidia "\
                         + "-e DISPLAY=$DISPLAY "\
-                        + "-v /etc/localtime:/etc/localtime:ro"\
-                        + "-v /etc/timezone:/etc/timezone:ro"\
+                        + "-v /etc/localtime:/etc/localtime:ro "\
+                        + "-v /etc/timezone:/etc/timezone:ro "\
                         + "-v /edgefarm_config:/edgefarm_config "\
                         + "-v /home/intflow/works:/works "\
                         + "-v /sys/devices/:/sys/devices " \
