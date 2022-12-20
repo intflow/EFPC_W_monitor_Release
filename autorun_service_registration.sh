@@ -18,6 +18,6 @@ echo ""
 
 sudo systemctl daemon-reload
 sudo systemctl enable ef_count_autorun.service
-sudo systemctl start ef_count_autorun.service
+# sudo systemctl start ef_count_autorun.service
 
 echo "Done"

@@ -86,6 +86,8 @@ def folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK, FIRS
 if __name__ == "__main__":
     fan_speed_set(configs.FAN_SPEED)
     
+    subprocess.run("bash ./autorun_service_registration.sh", shell=True)
+    
     docker_repo = configs.docker_repo
     docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
     docker_image_tag_header = configs.docker_image_tag_header    
