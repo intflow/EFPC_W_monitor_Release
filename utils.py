@@ -88,6 +88,7 @@ def kill_edgefarm():
     subprocess.run(f"docker exec -it {configs.container_name} bash ./kill_edgefarm.sh", shell=True)
 
 def run_docker(docker_image, docker_image_id):
+    # /edgefarm_config 가 없으면 전체 복사
     if os.path.isdir("/edgefarm_config") == False:
         os.makedirs("/edgefarm_config", exist_ok=True)
         copy_edgefarm_config(mode="all")
@@ -320,8 +321,30 @@ def key_match(src_key, src_data, target_data):
             target_val = target_data[target_key]
             print(f"{src_key} : {src_data[src_key]} -> {target_val}")
             src_data[src_key] = target_val 
+            
+def add_key_to_edgefarm_config():
+    # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
+    # file read
+    with open(configs.edgefarm_config_path, "r") as edgefarm_config_file:
+        edgefarm_config = json.load(edgefarm_config_file)
+        
+    with open(os.path.join(current_dir, "edgefarm_config/edgefarm_config.json"), "r") as edgefarm_config_file:
+        edgefarm_config_git = json.load(edgefarm_config_file)
+
+    print()
+    for key in edgefarm_config_git.keys():
+        if key not in edgefarm_config:
+            print(f"\"{key}\" is not in \"{configs.edgefarm_config_path}\".\nAdd \"{key}\" to \"{configs.edgefarm_config_path}\"\n")
+            edgefarm_config[key] = edgefarm_config_git[key]
+
+    # file save
+    with open(configs.edgefarm_config_path, "w") as edgefarm_config_file:
+        json.dump(edgefarm_config, edgefarm_config_file, indent=4)    
 
 def device_install():
+    # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
+    add_key_to_edgefarm_config()
+    
     # mac address 뽑기
     mac_address = getmac.get_mac_address().replace(':','')
     docker_repo = configs.docker_repo
@@ -412,5 +435,5 @@ if __name__ == "__main__":
     # print(docker_image[:docker_image.find("_v")])
     
     # print(configs.docker_image_tag_header)
-    copy_edgefarm_config()
+    # copy_edgefarm_config()
 

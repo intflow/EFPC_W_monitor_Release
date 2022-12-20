@@ -14,7 +14,7 @@ key_match_dict = {
     'cam_id' : 'id'
 }
 
-not_copy_edgefarm_config_list=['Recording', 'rtsp_address.txt', 'edgefarm_config.json']
+not_copy_edgefarm_config_list=['Recording', 'rtsp_address.txt', 'edgefarm_config.json', 'model']
 not_copy_DB_config_list=['hallway_width_pixel','hallway_width_cm','vpi_k1','zy_perspect','zx_perspect','x_focus','y_focus','y_rotate','x_rotate']
 
 server_api_path = "/device/info"
