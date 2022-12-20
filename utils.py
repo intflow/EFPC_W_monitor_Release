@@ -402,7 +402,7 @@ def show_docker_images_list(docker_image_head):
  
 
 def run_blackBox():
-    subprocess.run("/home/intflow/works/efpc_box/bin/edfc_box")
+    subprocess.run("/home/intflow/works/efpc_box/bin/efpc_box")
 
 if __name__ == "__main__":
     # subprocess.call(f"docker login docker.io -u \"{configs.docker_id}\" -p \"{configs.docker_pw}\"", shell=True)
