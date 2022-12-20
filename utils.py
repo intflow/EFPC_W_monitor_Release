@@ -435,5 +435,5 @@ if __name__ == "__main__":
     # print(docker_image[:docker_image.find("_v")])
     
     # print(configs.docker_image_tag_header)
-    # copy_edgefarm_config()
+    copy_edgefarm_config()
 
