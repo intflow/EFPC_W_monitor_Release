@@ -59,5 +59,5 @@ def git_pull():
     
     
 if __name__ == "__main__":
-    git_pull()
+    copy_firmwares()
     
