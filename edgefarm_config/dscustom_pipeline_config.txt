@@ -1,0 +1,30 @@
+[property]
+gpu-id=0
+#net-scale-factor=0.0039215697906911373
+net-scale-factor=0.003921568627451
+maintain-aspect-ratio=1
+
+# 0:RGB 1:BGR
+model-color-format=0
+model-engine-file=/edgefarm_config/model/intflow_model.engine
+labelfile-path=/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/ef_custompipline/labels_yolox.txt
+num-detected-classes=3
+batch-size=1
+interval=0
+gie-unique-id=1
+process-mode=1
+
+# 0=Detector, 1=Classifier, 2=Segmentation, 100=Other
+network-type=0
+
+# 0  ^zGroup Rectange 1  ^zDBSCAN 2  ^zNMS 3:DBSCAN+NMS 4:None
+cluster-mode=4
+parse-bbox-func-name=NvDsInferParseCustomYolox
+custom-lib-path=/opt/nvidia/deepstream/deepstream/sources/apps/sample_apps/ef_custompipline/libnvdsparsebbox_yoloxoad.so
+
+[class-attrs-all]
+topk=300
+detected-min-h=10
+detected-min-w=10
+pre-cluster-threshold=0.25
+detected-min-area=10

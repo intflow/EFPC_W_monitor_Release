@@ -19,8 +19,12 @@ def copy_firmwares():
         file_path = os.path.join(firmware_path, i)
         target_path = os.path.join(configs.firmware_dir, i)
         
-        # shutil.copy2(file_path, target_path)
-        subprocess.run(f"sudo cp -a {file_path} {target_path}", shell=True)
+        if os.path.isdir(file_path):
+            subprocess.run(f"sudo cp -ra {file_path} {target_path}", shell=True)
+        else:
+            # shutil.copy2(file_path, target_path)
+            subprocess.run(f"sudo cp -a {file_path} {target_path}", shell=True)
+        
         print(f"cp {file_path} {target_path}")
     
     print("Copy Firmwares Completed !!\n\n")
