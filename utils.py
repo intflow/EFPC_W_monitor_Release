@@ -104,18 +104,20 @@ def run_docker(docker_image, docker_image_id):
                         + "--privileged "\
                         + "--ipc=host "\
                         + "--runtime nvidia "\
-                        + "-e DISPLAY=$DISPLAY " \
+                        + "-e DISPLAY=$DISPLAY "\
+                        + "-v /etc/localtime:/etc/localtime:ro"\
+                        + "-v /etc/timezone:/etc/timezone:ro"\
                         + "-v /edgefarm_config:/edgefarm_config "\
                         + "-v /home/intflow/works:/works "\
                         + "-v /sys/devices/:/sys/devices " \
                         + "-v /sys/class/gpio:/sys/class/gpio "\
-                        + "-v /home/intflow/.Xauthority:/root/.Xauthority:rw " \
-                        + "-v /tmp/.X11-unix:/tmp/.X11-unix " \
-                        + "-v /dev/input:/dev/input " \
-                        + "-v /bin/systemctl:/bin/systemctl " \
-                        + "-v /run/systemd/system:/run/systemd/system " \
-                        + "-v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket " \
-                        + "-v /sys/fs/cgroup:/sys/fs/cgroup " \
+                        + "-v /home/intflow/.Xauthority:/root/.Xauthority:rw "\
+                        + "-v /tmp/.X11-unix:/tmp/.X11-unix "\
+                        + "-v /dev/input:/dev/input "\
+                        + "-v /bin/systemctl:/bin/systemctl "\
+                        + "-v /run/systemd/system:/run/systemd/system "\
+                        + "-v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket "\
+                        + "-v /sys/fs/cgroup:/sys/fs/cgroup "\
                         + "-w /opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/ef_custompipline "\
                         + f"{docker_image_id} bash ./run_edgefarm.sh"
                         # + "{} bash".format(lastest_docker_image_info[1])
@@ -373,7 +375,6 @@ def device_install():
             edgefarm_config = json.load(edgefarm_config_file)
         
         # edgefarm_config["device_id"] = -1
-        edgefarm_config["auto_mode"] = True
             
         # file save
         with open(configs.edgefarm_config_path, "w") as edgefarm_config_file:
@@ -407,8 +408,9 @@ if __name__ == "__main__":
     # subprocess.call(f"docker login docker.io -u \"{configs.docker_id}\" -p \"{configs.docker_pw}\"", shell=True)
     # subprocess.run("docker logout", shell=True)
     
-    docker_image, docker_image_id = find_lastest_docker_image("intflow/efpc_f")
-    print(docker_image[:docker_image.find("_v")])
+    # docker_image, docker_image_id = find_lastest_docker_image("intflow/efpc_f")
+    # print(docker_image[:docker_image.find("_v")])
     
-    print(configs.docker_image_tag_header)
+    # print(configs.docker_image_tag_header)
+    copy_edgefarm_config()
 
