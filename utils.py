@@ -9,6 +9,7 @@ import getmac
 import time
 import os
 import socket
+import psutil
 
 import datetime as dt
 import pytz
@@ -425,7 +426,17 @@ def show_docker_images_list(docker_image_head):
  
 
 def run_blackBox():
-    subprocess.run("/home/intflow/works/firmwares/efpc_box")
+    subprocess.run("/home/intflow/works/firmwares/efpc_box", shell=True)
+    
+def is_process_running(process_name):
+    # Iterate over all running processes
+    for process in psutil.process_iter():
+        # Get the name of the process
+        name = process.name()
+        # Check if the process name matches the specified name
+        if name == process_name:
+            return True
+    return False
 
 if __name__ == "__main__":
     # subprocess.call(f"docker login docker.io -u \"{configs.docker_id}\" -p \"{configs.docker_pw}\"", shell=True)

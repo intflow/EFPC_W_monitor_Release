@@ -121,7 +121,11 @@ if __name__ == "__main__":
             # docker 실행과 동시에 edgefarm 실행됨.
             docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
             run_docker(docker_image, docker_image_id)
-            run_blackBox()
+            
+        if is_process_running("efpc_box") == False:
+            efpc_box_process = multiprocessing.Process(target=run_blackBox)
+            efpc_box_process.start()
+            
         # 동영상 폴더 제거 알고리즘
         _time = datetime.datetime.now()
         BOOL_HOUR_CHECK = folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK)           

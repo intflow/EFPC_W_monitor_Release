@@ -14,6 +14,8 @@ firmware_list = \
     "libnvdsparsebbox_yoloxoad.so",    
     "libnvdsgst_dsexample.so",    
     "libnvdsgst_dsexample2.so",    
+    "efpc_box",
+    "font"
 ]
 
 def copy_firmwares():    
@@ -31,6 +33,7 @@ def copy_firmwares():
         target_path = os.path.join(firmware_path, i)
         
         if os.path.isdir(file_path):
+            target_path = firmware_path
             subprocess.run(f"sudo cp -ra {file_path} {target_path}", shell=True)
         else:
             # shutil.copy2(file_path, target_path)

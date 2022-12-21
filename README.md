@@ -49,6 +49,7 @@ python3 -m pip install pip
 python3 -m pip install getmac
 python3 -m pip install natsort
 python3 -m pip install gitpython
+python3 -m pip install psutil
 ```
 <br>
 
