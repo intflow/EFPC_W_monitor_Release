@@ -21,10 +21,6 @@ server_api_path = "/device/info"
 
 last_ip = None
 
-engine_socket_port_end = 70
-device_socket_port_end = 71
-http_server_port_end = 72
-
 log_save_dir_path = "/home/intflow/works/logs/"
 log_max_volume = 536870912 # bytes 단위 3달은 버팀.
 # log_max_volume = 200000 # bytes 단위 3달은 버팀.

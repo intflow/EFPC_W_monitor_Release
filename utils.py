@@ -95,8 +95,6 @@ def port_info_set():
         num_line = len(content)
 
         if configs.last_ip is not None:
-            configs.PORT = int(configs.last_ip + str(configs.device_socket_port_end))
-            configs.http_server_port = int(configs.last_ip + str(configs.http_server_port_end))
             if num_line >= 3:
                 udp_host = "224.224.255." + configs.last_ip + "\n"
                 content[2] = udp_host
