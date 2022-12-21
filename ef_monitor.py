@@ -253,6 +253,9 @@ if __name__ == "__main__":
                 else:
                     print_with_lock("\nNot Running View docker log mode\n")
             elif user_command == 6: # supervisor start
+                
+                subprocess.run("bash ./autorun_service_registration.sh", shell=True)
+                
                 # kill_edgefarm()
                 with control_thread_cd:
                     if autorun_service_check() == "RUNNING":

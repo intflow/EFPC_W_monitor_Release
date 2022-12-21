@@ -344,7 +344,6 @@ def add_key_to_edgefarm_config():
 
 def device_install():
     # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
-    add_key_to_edgefarm_config()
     
     # mac address 뽑기
     mac_address = getmac.get_mac_address().replace(':','')
@@ -359,6 +358,8 @@ def device_install():
     if os.path.isdir("/edgefarm_config") == False:
         os.makedirs("/edgefarm_config", exist_ok=True)
         copy_edgefarm_config(mode="all")
+        
+    add_key_to_edgefarm_config()
 
     # if device_info is not None:
     if device_info is not None and len(device_info) > 0:
