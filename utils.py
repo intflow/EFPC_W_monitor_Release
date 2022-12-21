@@ -89,10 +89,7 @@ def kill_edgefarm():
     subprocess.run(f"docker exec -it {configs.container_name} bash ./kill_edgefarm.sh", shell=True)
 
 def run_docker(docker_image, docker_image_id):
-    # /edgefarm_config 가 없으면 전체 복사
-    if os.path.isdir("/edgefarm_config") == False:
-        subprocess.run("sudo mkdir /edgefarm_config", shell=True)
-        copy_edgefarm_config(mode="all")
+    edgefarm_config_check()
     fan_speed_set(configs.FAN_SPEED)
     if docker_image == None or docker_image_id == None:
         for i in range(10):
@@ -297,22 +294,40 @@ def send_api(path, mac_address, e_version):
     except Exception as ex:
         print(ex)
         return None
+
+def edgefarm_config_check():
+    # /edgefarm_config 가 없으면 전체 복사
+    if os.path.isdir("/edgefarm_config") == False:
+        subprocess.run("sudo mkdir /edgefarm_config", shell=True)
+        print("make directory /edgefarm_config")
+    subprocess.run("sudo chown intflow:intflow -R /edgefarm_config", shell=True)
     
-def copy_edgefarm_config(mode="default"):
-    # print(f"cp {os.path.join(current_dir, 'edgefarm_config/edgefarm_config.json')} /edgefarm_config/edgefarm_config.json")
-    # subprocess.run(f"sudo cp {os.path.join(current_dir, 'edgefarm_config/edgefarm_config.json')} /edgefarm_config/edgefarm_config.json", shell=True)
+    git_edgefarm_config_list = []
+    local_edgefarm_config_list = []
     
-    config_list = os.listdir(os.path.join(current_dir, 'edgefarm_config'))
-    for e_f in config_list:
-        file_path = os.path.join(current_dir, f'edgefarm_config/{e_f}')
-        if mode != "all":
-            if e_f in configs.not_copy_edgefarm_config_list:
-                continue
-        if os.path.isdir(file_path):
-            subprocess.run(f"sudo cp -r {file_path} /edgefarm_config/", shell=True)
-        else:
-            subprocess.run(f"sudo cp {file_path} /edgefarm_config/", shell=True)
-        print(f"copy {file_path} to /edgefarm_config/")
+    git_edgefarm_config_path = os.path.join(current_dir, "edgefarm_config")
+    local_edgefarm_config_path = "/edgefarm_config"
+    
+    git_edgefarm_config_list = os.listdir(git_edgefarm_config_path)
+    local_edgefarm_config_list = os.listdir(local_edgefarm_config_path)
+    
+    for g_e in git_edgefarm_config_list:
+        file_path = os.path.join(git_edgefarm_config_path, g_e)
+        # /edgefarm_config 에 없으면 복사하기.
+        if g_e not in local_edgefarm_config_list:
+            if os.path.isdir(file_path):
+                subprocess.run(f"sudo cp -rfa {file_path} /edgefarm_config/", shell=True)
+            else:
+                subprocess.run(f"sudo cp -fa {file_path} /edgefarm_config/", shell=True)
+            print(f"copy {file_path} to /edgefarm_config/")
+        # 있더라도 configs.MUST_copy_edgefarm_config_list 목록에 있으면 무조건 복사.
+        elif g_e in configs.MUST_copy_edgefarm_config_list:
+            if os.path.isdir(file_path):
+                subprocess.run(f"sudo cp -rfa {file_path} /edgefarm_config/", shell=True)
+            else:
+                subprocess.run(f"sudo cp -fa {file_path} /edgefarm_config/", shell=True)
+            print(f"copy {file_path} to /edgefarm_config/")
+            
         
 
 def key_match(src_key, src_data, target_data):
@@ -354,19 +369,13 @@ def device_install():
     # device 정보 받기 (api request)
     device_info = send_api(configs.server_api_path, mac_address, e_version)
     
-    # /edgefarm_config 가 없으면 전체 복사
-    if os.path.isdir("/edgefarm_config") == False:
-        subprocess.run("sudo mkdir /edgefarm_config", shell=True)
-        copy_edgefarm_config(mode="all")
-        
-    subprocess.run("sudo chown intflow:intflow -R /edgefarm_config", shell=True)
+    edgefarm_config_check()
         
     add_key_to_edgefarm_config()
 
     # if device_info is not None:
     if device_info is not None and len(device_info) > 0:
         # 정보 받아왔으면 일단 edgefarm_config 들 복사
-        copy_edgefarm_config()
         print(device_info)
         device_info = device_info[0]
 
@@ -449,5 +458,5 @@ if __name__ == "__main__":
     # print(docker_image[:docker_image.find("_v")])
     
     # print(configs.docker_image_tag_header)
-    copy_edgefarm_config()
+    edgefarm_config_check()
 

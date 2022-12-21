@@ -12,7 +12,7 @@ import natsort
 import configs
 from utils import *
 from for_supervisor import *
-import firmware_manager
+import firmwares_manager
 
 def autorun_service_check():
     result = subprocess.run("systemctl status ef_count_autorun.service", stdout=subprocess.PIPE, shell=True)
@@ -182,7 +182,7 @@ if __name__ == "__main__":
                 if (check_deepstream_status()):
                     print_with_lock("\nEdge Farm is Already Running\n")
                 else:
-                    firmware_manager.copy_firmwares()
+                    firmwares_manager.copy_firmwares()
                     device_install()
                     with control_thread_cd:
                         docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
@@ -191,7 +191,7 @@ if __name__ == "__main__":
             elif user_command == 4: # 재시작.
                 if (check_deepstream_status()): # engine 이 켜져있다면
                     print("\nRestart Edgefarm!")
-                    firmware_manager.copy_firmwares()
+                    firmwares_manager.copy_firmwares()
                     device_install() # api request
                     with control_thread_cd:
                         # if autorun_service_check() == "RUNNING": # autorun 이 켜져있다면

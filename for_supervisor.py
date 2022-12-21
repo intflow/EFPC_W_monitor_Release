@@ -13,7 +13,7 @@ from queue import Queue
 import struct
 import configs
 from utils import *
-import firmware_manager
+import firmwares_manager
 
 def key_match(src_key, src_data, target_data):
     if src_key in configs.key_match_dict:
@@ -91,7 +91,7 @@ if __name__ == "__main__":
     docker_image_tag_header = configs.docker_image_tag_header    
 
     os.makedirs(configs.firmware_dir, exist_ok=True)
-    firmware_manager.copy_firmwares()
+    firmwares_manager.copy_firmwares()
     
     device_install()
 
@@ -130,7 +130,7 @@ if __name__ == "__main__":
         LOG_DIR_CHECK = log_dir_vol_manage(_time, LOG_DIR_CHECK)
         
         # git pull
-        firmware_manager.git_pull()
+        firmwares_manager.git_pull()
         
         time.sleep(0.5) # 1초 지연.
 
