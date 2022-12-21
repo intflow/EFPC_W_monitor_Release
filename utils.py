@@ -84,6 +84,25 @@ def port_status_check(port):
         return True
     else:
         return False
+    
+def port_info_set():
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.connect(("8.8.8.8", 80))
+    configs.last_ip=s.getsockname()[0].split('.')[-1]
+
+    with open(configs.edgefarm_port_info_path, 'r') as port_info_f:
+        content = port_info_f.readlines()
+        num_line = len(content)
+
+        if configs.last_ip is not None:
+            configs.PORT = int(configs.last_ip + str(configs.device_socket_port_end))
+            configs.http_server_port = int(configs.last_ip + str(configs.http_server_port_end))
+            if num_line >= 3:
+                udp_host = "224.224.255." + configs.last_ip + "\n"
+                content[2] = udp_host
+
+    with open(configs.edgefarm_port_info_path, 'w') as port_info_f:
+        port_info_f.writelines(content)
 
 def kill_edgefarm():
     subprocess.run(f"docker exec -it {configs.container_name} bash ./kill_edgefarm.sh", shell=True)
@@ -91,6 +110,7 @@ def kill_edgefarm():
 def run_docker(docker_image, docker_image_id):
     edgefarm_config_check()
     fan_speed_set(configs.FAN_SPEED)
+    port_info_set()
     if docker_image == None or docker_image_id == None:
         for i in range(10):
             print("\nNo Docker Image...\n")

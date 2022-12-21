@@ -113,6 +113,10 @@ if __name__ == "__main__":
     # edgefarm 구동.
     while (True):
         # edgefarm docker 가 켜져있는지 체크
+        if is_process_running("efpc_box") == False:
+            efpc_box_process = multiprocessing.Process(target=run_blackBox)
+            efpc_box_process.start()
+            
         if check_deepstream_status():
             pass
         else:
@@ -120,9 +124,6 @@ if __name__ == "__main__":
             docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
             run_docker(docker_image, docker_image_id)
             
-        if is_process_running("efpc_box") == False:
-            efpc_box_process = multiprocessing.Process(target=run_blackBox)
-            efpc_box_process.start()
             
         # 동영상 폴더 제거 알고리즘
         _time = datetime.datetime.now()
