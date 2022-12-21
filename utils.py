@@ -91,7 +91,7 @@ def kill_edgefarm():
 def run_docker(docker_image, docker_image_id):
     # /edgefarm_config 가 없으면 전체 복사
     if os.path.isdir("/edgefarm_config") == False:
-        os.makedirs("/edgefarm_config", exist_ok=True)
+        subprocess.run("sudo mkdir /edgefarm_config", shell=True)
         copy_edgefarm_config(mode="all")
     fan_speed_set(configs.FAN_SPEED)
     if docker_image == None or docker_image_id == None:
@@ -356,8 +356,10 @@ def device_install():
     
     # /edgefarm_config 가 없으면 전체 복사
     if os.path.isdir("/edgefarm_config") == False:
-        os.makedirs("/edgefarm_config", exist_ok=True)
+        subprocess.run("sudo mkdir /edgefarm_config", shell=True)
         copy_edgefarm_config(mode="all")
+        
+    subprocess.run("sudo chown intflow:intflow -R /edgefarm_config", shell=True)
         
     add_key_to_edgefarm_config()
 
