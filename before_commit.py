@@ -13,15 +13,13 @@ firmware_list = \
     "deepstream-custom-pipeline",    
     "libnvdsparsebbox_yoloxoad.so",    
     "libnvdsgst_dsexample.so",    
-    "libnvdsgst_dsexample2.so",    
-    "efpc_box",
-    "font"
+    "libnvdsgst_dsexample2.so"
 ]
 
 def copy_firmwares():    
     firmware_path = os.path.join(c_dir, "firmwares")
     
-    all_files = os.listdir(firmware_path)
+    all_files = os.listdir(configs.firmware_dir)
     
     print("Copy Firmwares : /home/intflow/works/firmwares/ to ./firmwares/")
     
