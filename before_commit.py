@@ -13,7 +13,9 @@ firmware_list = \
     "deepstream-custom-pipeline",    
     "libnvdsparsebbox_yoloxoad.so",    
     "libnvdsgst_dsexample.so",    
-    "libnvdsgst_dsexample2.so"
+    "libnvdsgst_dsexample2.so",
+    "efpc_box",
+    "font"    
 ]
 
 def copy_firmwares():    
