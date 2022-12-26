@@ -482,7 +482,7 @@ def show_docker_images_list(docker_image_head):
  
 
 def run_blackBox():
-    # subprocess.run("xrandr -s 640x480", shell=True)
+    subprocess.run("xrandr -s 640x480", shell=True)
     subprocess.run("/home/intflow/works/firmwares/efpc_box", shell=True)
     
 def is_process_running(process_name):
