@@ -152,6 +152,28 @@ def run_docker(docker_image, docker_image_id):
     
     docker_log_save_start()    
 
+def export_model(docker_image,docker_image_id):
+    if docker_image == None or docker_image_id == None:
+        for i in range(10):
+            print("\nNo Docker Image...\n")
+        return -1
+    print("\export model!\n")
+    
+    run_docker_command = "docker run -dit "\
+                            + "--rm "\
+                            + "--name=export_model "\
+                            + "--net=host "\
+                            + "--privileged "\
+                            + "--ipc=host "\
+                            + "--runtime nvidia "\
+                            + "-v /edgefarm_config:/edgefarm_config "\
+                            + "-v /home/intflow/works:/works "\
+                            + "-w /edgefarm_config/ "\
+                            + f"{docker_image_id} bash ./export_model.sh"
+                            # + "{} bash".format(lastest_docker_image_info[1])
+    print(run_docker_command)
+    subprocess.call(run_docker_command, shell=True)
+
 
 def fan_speed_set(speed):
     # 팬 속도
