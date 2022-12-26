@@ -147,7 +147,6 @@ def docker_log_process_start(docker_log_process_list):
 
 if __name__ == "__main__":
     fan_speed_set(configs.FAN_SPEED)
-    port_info_set()
     
     # docker_image_head = "intflow/edgefarm:hallway_dev"
     docker_repo = configs.docker_repo

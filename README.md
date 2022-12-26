@@ -43,13 +43,18 @@ Set the model to load on its own device
 
 
 # 3. dependency
+## python libraries
 ```
-sudo apt install -y python3-pip
-python3 -m pip install pip
-python3 -m pip install getmac
-python3 -m pip install natsort
-python3 -m pip install gitpython
-python3 -m pip install psutil
+sudo apt install -y python3-pip && \
+python3 -m pip install pip getmac natsort gitpython psutil
+```
+## opencv
+```
+bash opencv_build.sh
+```
+## RapidJson
+```
+bash rapidjson_build.sh
 ```
 <br>
 

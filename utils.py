@@ -234,6 +234,9 @@ def find_lastest_docker_image(docker_repo, mode=0):
     
         candidate_group.append(res[0])
         
+    if len(candidate_group) == 0:
+        return ["None", "None"]
+        
     res2 = sorted(candidate_group, key=cmp_to_key(docker_image_sort))[0]
     
     configs.docker_image_tag_header = res2[0][:res2[0].find("_v")]

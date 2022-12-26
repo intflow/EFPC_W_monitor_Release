@@ -4,7 +4,7 @@ API_HOST = "http://intflowserver2.iptime.org:20051"
 
 docker_repo = "intflow/efpc_w"
 docker_image_tag_header_list = ["dev", "res"] # res 우선
-docker_image_tag_header = None # Don't Touch!! 수정하지 말고 놔두기!! 자동으로 잡음.
+docker_image_tag_header = "None" # Don't Touch!! 수정하지 말고 놔두기!! 자동으로 잡음.
 edgefarm_config_path = "/edgefarm_config/edgefarm_config.json"
 edgefarm_port_info_path = "/edgefarm_config/port_info.txt"
 container_name = "efhall_test"
