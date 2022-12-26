@@ -75,6 +75,7 @@ def control_edgefarm_monitor(control_queue, docker_repo, control_thread_cd):
             print("5. kill : Kill Edgefarm engine. (Warning) Auto Run Service will be stopped")
             print("6. autostart : Start Auto Run Service")
             print("7. autostop : Stop Auto Run Service")
+            print("8. export : create intflow model engine")
             print("10. images : show \"{}\" docker images".format(docker_repo + ":" + configs.docker_image_tag_header))
             print("11. updatecheck : Check Last docker image from docker hub")
             print("12. updateimage : Pull lastest version image from docker hub")
@@ -101,6 +102,8 @@ def control_edgefarm_monitor(control_queue, docker_repo, control_thread_cd):
                 control_queue.put(6)
             elif user_command in ["autostop", "7"]:
                 control_queue.put(7)
+            elif user_command in ["export", "8"]:
+                control_queue.put(8)
             elif user_command in ["images", "10"]:
                 control_queue.put(10)
             elif user_command in ["updatecheck", "11"]:
@@ -270,6 +273,12 @@ if __name__ == "__main__":
                         print("\nAuto Run Service is not Running\n")
                     else:
                         autorun_service_stop() # autorun service 멈춤
+                    control_thread_cd.notifyAll()
+            elif user_command == 8:
+                with control_thread_cd:
+                    edgefarm_config_check()
+                    docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
+                    export_model(docker_image,docker_image_id)
                     control_thread_cd.notifyAll()
             elif user_command == 10: # show docker image list
                 with control_thread_cd:
