@@ -15,7 +15,7 @@ key_match_dict = {
 }
 
 MUST_copy_edgefarm_config_list=["model"] # model 업데이트 됐을 때 "model" 추가 시켜주기!
-not_copy_DB_config_list=['hallway_width_pixel','hallway_width_cm','vpi_k1','zy_perspect','zx_perspect','x_focus','y_focus','y_rotate','x_rotate']
+not_copy_DB_config_list=['hallway_width_pixel','hallway_width_cm','vpi_k1','zy_perspect','zx_perspect','x_focus','y_focus','y_rotate','x_rotate','direction','limit_max_weight','weigth_bias','ship_direction','reference_weight']
 
 server_api_path = "/device/info"
 
