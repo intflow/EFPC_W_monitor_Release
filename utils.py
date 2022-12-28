@@ -20,12 +20,11 @@ current_dir = os.path.dirname(os.path.abspath(__file__))
 def docker_log_save_start():
     os.makedirs(configs.log_save_dir_path, exist_ok=True)
     
-    KST_timezone = pytz.timezone('Asia/Seoul')
-    now_kst = dt.datetime.now().astimezone(KST_timezone)
+    now_dt = dt.datetime.now()
 
-    # print(now_kst.strftime("%Y%m%d_%H%M%S_log"))
+    # print(now_dt.strftime("%Y%m%d_%H%M%S_log"))
     
-    file_name = now_kst.strftime("%Y%m%d_%H%M%S.log")
+    file_name = now_dt.strftime("%Y%m%d_%H%M%S.log")
     file_path = os.path.join(configs.log_save_dir_path, file_name)
     
     subprocess.Popen(f"docker logs -f {configs.container_name} > {file_path} &", shell=True)
