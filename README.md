@@ -43,6 +43,34 @@ Set the model to load on its own device
 
 
 # 3. dependency
+## 마우스 커서 없애기
+### 1.Install Unclutter and Create a file called ".unclutter" in your home directory
+```
+sudo apt install unclutter -y
+touch ~/.unclutter
+```
+### 2. Open the ".unclutter" file in a text editor
+```
+nano ~/.unclutter
+```
+### 3. Add the following line to the file
+```
+unclutter -idle 0.1 -root
+```
+Save and close the file.
+### 4. To start Unclutter at boot
+```
+mkdir -p ~/.config/lxsession/LXDE-pi/
+nano ~/.config/lxsession/LXDE-pi/autostart
+```
+you can add the following line to your "~/.config/lxsession/LXDE-pi/autostart" file
+```
+@unclutter -idle 0.1 -root
+```
+Save and close the file.<br>
+### 5. reboot
+<br>
+
 ## python libraries
 ```
 sudo apt install -y python3-pip && \
@@ -55,10 +83,6 @@ bash opencv_build.sh
 ## RapidJson
 ```
 bash rapidjson_build.sh
-```
-## JetsonGPIO
-```
-jetsongpio_build.sh
 ```
 <br>
 
