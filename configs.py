@@ -7,7 +7,7 @@ docker_image_tag_header_list = ["dev", "res"] # res 우선
 docker_image_tag_header = "None" # Don't Touch!! 수정하지 말고 놔두기!! 자동으로 잡음.
 edgefarm_config_path = "/edgefarm_config/edgefarm_config.json"
 edgefarm_port_info_path = "/edgefarm_config/port_info.txt"
-container_name = "efhall_test"
+container_name = "edgefarm_docker"
 commit_container_name = "for_commit"
 
 key_match_dict = {
@@ -15,7 +15,7 @@ key_match_dict = {
 }
 
 MUST_copy_edgefarm_config_list=["model"] # model 업데이트 됐을 때 "model" 추가 시켜주기!
-not_copy_DB_config_list=['hallway_width_pixel','hallway_width_cm','vpi_k1','zy_perspect','zx_perspect','x_focus','y_focus','y_rotate','x_rotate']
+not_copy_DB_config_list=['hallway_width_pixel','hallway_width_cm','vpi_k1','zy_perspect','zx_perspect','x_focus','y_focus','y_rotate','x_rotate','direction','limit_max_weight','weigth_bias','ship_direction','reference_weight']
 
 server_api_path = "/device/info"
 
