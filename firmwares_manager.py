@@ -45,6 +45,9 @@ def git_pull():
             if git_pull_done == False:
                 git_dir = c_dir  
                 repo = git.Repo(git_dir)
+                # 변경사항 지우기
+                repo.head.reset(index=True, working_tree=True)
+                # pull 받기
                 repo.remotes.origin.pull()
                 # repo.remotes.release.pull() # 개발용
                 print("  Done\n")
@@ -60,4 +63,3 @@ def git_pull():
     
 if __name__ == "__main__":
     copy_firmwares()
-    
