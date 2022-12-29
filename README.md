@@ -56,6 +56,10 @@ bash opencv_build.sh
 ```
 bash rapidjson_build.sh
 ```
+## JetsonGPIO
+```
+jetsongpio_build.sh
+```
 <br>
 
 # 4. docker 권한변경

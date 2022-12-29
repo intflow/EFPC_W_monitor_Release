@@ -112,8 +112,7 @@ if [ -d "/opencv" ]; then
         ../
 
         time sudo make -j4 && \
-        sudo make install && \
-        sudo rm -rf /opencv
+        sudo make install
 
         # 설치 확인
         opencv_version --verbose

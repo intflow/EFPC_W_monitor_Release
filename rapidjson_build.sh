@@ -1,7 +1,5 @@
 #!/bin/bash
 
-echo ${USER}
-
 git clone https://github.com/Tencent/rapidjson.git
 if [ -d "./rapidjson" ]; then
     cd rapidjson
@@ -11,5 +9,6 @@ if [ -d "./rapidjson" ]; then
     sudo cmake .. && \
     time sudo make -j4 && \
     sudo make install && \
+    cd ../../ && \
     sudo rm -rf rapidjson/
 fi
