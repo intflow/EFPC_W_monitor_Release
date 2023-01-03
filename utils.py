@@ -494,6 +494,10 @@ def is_process_running(process_name):
             return True
     return False
 
+def KST_timezone_set():
+    subprocess.run("sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime", shell=True)
+    print("Set TimeZone to Seoul")
+
 if __name__ == "__main__":
     # subprocess.call(f"docker login docker.io -u \"{configs.docker_id}\" -p \"{configs.docker_pw}\"", shell=True)
     # subprocess.run("docker logout", shell=True)
