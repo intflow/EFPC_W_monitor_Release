@@ -62,11 +62,11 @@ def git_pull():
           
     
     # pull 받기
-    if now_dt.hour == u_hour and now_dt.minute >= u_min:
+    if now_dt.hour == u_hour and now_dt.minute == u_min:
     # if now_dt.hour == 16 and now_dt.minute >= 38:
-        print("\n  git pull from remote repository")
         try:
             if git_pull_done == False:
+                print("\n  git pull from remote repository")
                 git_dir = c_dir  
                 repo = git.Repo(git_dir)
                 # 변경사항 지우기
@@ -87,3 +87,4 @@ def git_pull():
     
 if __name__ == "__main__":
     copy_firmwares()
+    # git_pull()
