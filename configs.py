@@ -40,3 +40,5 @@ log_max_volume = 536870912 # bytes 단위 3달은 버팀.
 # log_max_volume = 200000 # bytes 단위 3달은 버팀.
 
 firmware_dir = "/home/intflow/works/firmwares"
+
+update_hour, update_min, update_sec = [23,50,0]

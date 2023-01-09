@@ -38,31 +38,9 @@ def git_pull():
     
     now_dt = dt.datetime.now()
     # print(now_dt)
-    
-    edgefarm_config = {}
-
-    update_time_str = ""
-
-    # file read
-    with open(configs.edgefarm_config_path, "r") as edgefarm_config_file:
-        edgefarm_config = json.load(edgefarm_config_file)
-
-    if "update_time" in edgefarm_config:
-        update_time_str = edgefarm_config["update_time"]
-    # else:
-
-    if len(update_time_str) > 0:
-        update_time_slice = update_time_str.split(":")
-        if len(update_time_slice) == 3:
-            u_hour, u_min, u_sec = list(map(int,update_time_slice))
-        else:
-            print("Invalid data type : \"update_time\"")
-    else:
-        u_hour, u_min, u_sec = [23, 50, 0]
           
-    
     # pull 받기
-    if now_dt.hour == u_hour and now_dt.minute == u_min:
+    if now_dt.hour == configs.update_hour and now_dt.minute == configs.update_min:
     # if now_dt.hour == 16 and now_dt.minute >= 38:
         try:
             if git_pull_done == False:
