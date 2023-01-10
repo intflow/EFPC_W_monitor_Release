@@ -5,16 +5,19 @@ API_HOST = "http://intflowserver2.iptime.org:20051"
 docker_repo = "intflow/efpc_w"
 docker_image_tag_header_list = ["dev", "res"] # res 우선
 docker_image_tag_header = "None" # Don't Touch!! 수정하지 말고 놔두기!! 자동으로 잡음.
-edgefarm_config_path = "/edgefarm_config/edgefarm_config.json"
+
+local_edgefarm_config_path = "/edgefarm_config"
+edgefarm_config_json_path = "/edgefarm_config/edgefarm_config.json"
 edgefarm_port_info_path = "/edgefarm_config/port_info.txt"
 container_name = "edgefarm_docker"
+model_export_container_name = "export_model"
 commit_container_name = "for_commit"
 
 key_match_dict = {
     'cam_id' : 'id'
 }
 
-MUST_copy_edgefarm_config_list=["model"] # model 업데이트 됐을 때 "model" 추가 시켜주기!
+MUST_copy_edgefarm_config_list=[] 
 not_copy_DB_config_list=[
     'hallway_width_pixel',
     'hallway_width_cm',

@@ -49,12 +49,14 @@ def control_edgefarm_monitor(control_queue, docker_repo, control_thread_cd):
             if autorun_service_status == "RUNNING":
                 autorun_service_status = "\033[92mRUNNING\033[0m"
             ef_engine_status = "\033[92mRUNNING\033[0m" if check_deepstream_status() else "STOPPED"
+            model_export_status = "\033[92mRUNNING\033[0m" if check_model_export_status() else "STOPPED"
             
             print("\n======================================================")
             print("             Edge Farm Engine Monitor")
             print("\n                                              By. Ryu ")
             print("\nAutoRun Service Status : {}".format(autorun_service_status))
             print("Edge Farm Engine Status : {}".format(ef_engine_status))
+            print("Model Export Status : {}".format(model_export_status))
             print("\nDocker repo : {}".format(docker_repo))
             print("Current \033[92mRUNNING\033[0m docker image   : {}".format(current_running_docker_image))
             print("Last docker image (Local)      : {}".format(last_docker_image_local))
@@ -277,8 +279,6 @@ if __name__ == "__main__":
             elif user_command == 8:
                 with control_thread_cd:
                     edgefarm_config_check()
-                    docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
-                    export_model(docker_image,docker_image_id)
                     control_thread_cd.notifyAll()
             elif user_command == 10: # show docker image list
                 with control_thread_cd:
