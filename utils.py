@@ -10,6 +10,7 @@ import time
 import os
 import socket
 import psutil
+from pathlib import Path
 
 import datetime as dt
 import pytz
@@ -151,25 +152,38 @@ def run_docker(docker_image, docker_image_id):
     
     docker_log_save_start()    
 
-def export_model(docker_image,docker_image_id):
+def export_model(docker_image,docker_image_id, mode=""):
     if docker_image == None or docker_image_id == None:
         for i in range(10):
             print("\nNo Docker Image...\n")
         return -1
-    print("\export model!\n")
+    print("export model!\n")
     
-    run_docker_command = "docker run -dit "\
-                            + "--rm "\
-                            + "--name=export_model "\
-                            + "--net=host "\
-                            + "--privileged "\
-                            + "--ipc=host "\
-                            + "--runtime nvidia "\
-                            + "-v /edgefarm_config:/edgefarm_config "\
-                            + "-v /home/intflow/works:/works "\
-                            + "-w /edgefarm_config/ "\
-                            + f"{docker_image_id} bash ./export_model.sh"
-                            # + "{} bash".format(lastest_docker_image_info[1])
+    # sync mode 는 background 에서 실행안하고 끝날 때까지 기다림.
+    if mode == "sync":
+        run_docker_command = "docker run -i "\
+                                + "--rm "\
+                                + f"--name={configs.model_export_container_name} "\
+                                + "--net=host "\
+                                + "--privileged "\
+                                + "--ipc=host "\
+                                + "--runtime nvidia "\
+                                + "-v /edgefarm_config:/edgefarm_config "\
+                                + "-v /home/intflow/works:/works "\
+                                + "-w /edgefarm_config/ "\
+                                + f"{docker_image_id} bash ./export_model.sh"
+    else:
+        run_docker_command = "docker run -dit "\
+                                + "--rm "\
+                                + f"--name={configs.model_export_container_name} "\
+                                + "--net=host "\
+                                + "--privileged "\
+                                + "--ipc=host "\
+                                + "--runtime nvidia "\
+                                + "-v /edgefarm_config:/edgefarm_config "\
+                                + "-v /home/intflow/works:/works "\
+                                + "-w /edgefarm_config/ "\
+                                + f"{docker_image_id} bash ./export_model.sh"
     print(run_docker_command)
     subprocess.call(run_docker_command, shell=True)
 
@@ -184,6 +198,16 @@ def check_deepstream_status():
     res = str(res, 'utf-8').split("\n")[:-1]
 
     if configs.container_name in res:
+        return True
+    else:
+        return False
+
+## 실행 중이면 True, 실행 중이 아니면 False 반환.
+def check_model_export_status():
+    res = subprocess.check_output("docker ps --format \"{{.Names}}\"", shell=True)
+    res = str(res, 'utf-8').split("\n")[:-1]
+
+    if configs.model_export_container_name in res:
         return True
     else:
         return False
@@ -337,6 +361,54 @@ def send_api(path, mac_address, e_version):
         print(ex)
         return None
 
+def copy_to(src_path, target_path):
+    if os.path.isdir(src_path):
+        subprocess.run(f"sudo cp -rfa {src_path} {target_path}", shell=True)
+    else:
+        subprocess.run(f"sudo cp -fa {src_path} {target_path}", shell=True)
+    print(f"copy {src_path} to {target_path}")
+
+def model_update_check(git_edgefarm_config_path):
+    with open(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
+        git_model_version = mvf.readline()
+    with open(os.path.join(configs.local_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
+        local_model_version = mvf.readline()
+    
+    print("\nmodel version (git:local)")
+    print(f'{git_model_version} : {local_model_version}\n')
+    
+    git_model_version = git_model_version.split('.')
+    local_model_version = local_model_version.split('.')
+    
+    ver_length = len(git_model_version)
+    
+    lastest = True
+    
+    for i in range(ver_length):
+        g_v = int(''.join([x for x in git_model_version[i] if x.isdigit()]))
+        l_v = int(''.join([x for x in local_model_version[i] if x.isdigit()]))
+        # print(g_v, l_v)
+        if g_v <= l_v:
+            continue
+        else:
+            lastest = False
+    
+    return lastest
+
+def model_update(git_edgefarm_config_path):
+    # /edgefarm_config/model 디렉토리가 없으면 생성.
+    if not os.path.exists(os.path.join(configs.local_edgefarm_config_path, "model")):
+        os.makedirs(os.path.join(configs.local_edgefarm_config_path, "model"), exist_ok=True)
+    
+    print("Start Model Update!")
+    copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
+    docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
+    # onnx to engine
+    export_model(docker_image, docker_image_id, mode="sync")
+    # 버전 파일 복사.
+    copy_to(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), os.path.join(configs.local_edgefarm_config_path, "model/model_version.txt"))
+    print("\nModel Update Completed")
+
 def edgefarm_config_check():
     # /edgefarm_config 가 없으면 전체 복사
     if os.path.isdir("/edgefarm_config") == False:
@@ -344,33 +416,50 @@ def edgefarm_config_check():
         print("make directory /edgefarm_config")
     subprocess.run("sudo chown intflow:intflow -R /edgefarm_config", shell=True)
     
-    git_edgefarm_config_list = []
-    local_edgefarm_config_list = []
-    
     git_edgefarm_config_path = os.path.join(current_dir, "edgefarm_config")
-    local_edgefarm_config_path = "/edgefarm_config"
     
-    git_edgefarm_config_list = os.listdir(git_edgefarm_config_path)
-    local_edgefarm_config_list = os.listdir(local_edgefarm_config_path)
+    # 모델 관련 파일이 있나 검사. 하나라도 없으면 복사해주고 모델 export
+    model_related_list = ['model', 'model/intflow_model.onnx', 'model/intflow_model.engine', 'model/model_version.txt']
+    no_model = False
+    for m_i in model_related_list:
+        tmp_p = os.path.join(configs.local_edgefarm_config_path, m_i)
+        if not os.path.exists(tmp_p):
+            no_model = True
+    if no_model:    
+        model_update(git_edgefarm_config_path)
     
-    for g_e in git_edgefarm_config_list:
-        file_path = os.path.join(git_edgefarm_config_path, g_e)
-        # /edgefarm_config 에 없으면 복사하기.
-        if g_e not in local_edgefarm_config_list:
-            if os.path.isdir(file_path):
-                subprocess.run(f"sudo cp -rfa {file_path} /edgefarm_config/", shell=True)
-            else:
-                subprocess.run(f"sudo cp -fa {file_path} /edgefarm_config/", shell=True)
-            print(f"copy {file_path} to /edgefarm_config/")
-        # 있더라도 configs.MUST_copy_edgefarm_config_list 목록에 있으면 무조건 복사.
-        elif g_e in configs.MUST_copy_edgefarm_config_list:
-            if os.path.isdir(file_path):
-                subprocess.run(f"sudo cp -rfa {file_path} /edgefarm_config/", shell=True)
-            else:
-                subprocess.run(f"sudo cp -fa {file_path} /edgefarm_config/", shell=True)
-            print(f"copy {file_path} to /edgefarm_config/")
-            
-        
+    # 디렉토리 내부 검색을 위한 일회용 재귀함수.
+    def listdirs(rootdir):
+        for path in Path(rootdir).iterdir():
+            path_str = str(path)
+            local_path_str = path_str.replace(git_edgefarm_config_path, configs.local_edgefarm_config_path)
+                
+            local_path = Path(local_path_str)
+                
+            # /edgefarm_config 에 없으면 복사하기.
+            if local_path.exists() == False:
+                copy_to(path_str, str(local_path.parent))
+            # 있더라도 configs.MUST_copy_edgefarm_config_list 목록에 있으면 무조건 복사.
+            elif path.name in configs.MUST_copy_edgefarm_config_list:
+                copy_to(path_str, str(local_path.parent))
+                
+            if path.is_dir():
+                listdirs(path)
+                
+    listdirs(git_edgefarm_config_path) 
+    
+    # 모델 버전 체크 후 업데이트 여부 결정.
+    if model_update_check(git_edgefarm_config_path) == False:
+        print("Model Update required...")
+        # 혹시 엣지팜 켜져있으면 끄기.
+        while check_deepstream_status():
+            print("Try to kill Edgefarm Engine...")
+            kill_edgefarm()
+            time.sleep(1)
+        # model 업데이트하기
+        model_update(git_edgefarm_config_path)  
+    else:
+        print("Lastest version model")       
 
 def key_match(src_key, src_data, target_data):
     if src_key in configs.key_match_dict:
@@ -383,7 +472,7 @@ def key_match(src_key, src_data, target_data):
 def add_key_to_edgefarm_config():
     # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
     # file read
-    with open(configs.edgefarm_config_path, "r") as edgefarm_config_file:
+    with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
         edgefarm_config = json.load(edgefarm_config_file)
         
     with open(os.path.join(current_dir, "edgefarm_config/edgefarm_config.json"), "r") as edgefarm_config_file:
@@ -392,11 +481,11 @@ def add_key_to_edgefarm_config():
     print()
     for key in edgefarm_config_git.keys():
         if key not in edgefarm_config:
-            print(f"\"{key}\" is not in \"{configs.edgefarm_config_path}\".\nAdd \"{key}\" to \"{configs.edgefarm_config_path}\"\n")
+            print(f"\"{key}\" is not in \"{configs.edgefarm_config_json_path}\".\nAdd \"{key}\" to \"{configs.edgefarm_config_json_path}\"\n")
             edgefarm_config[key] = edgefarm_config_git[key]
 
     # file save
-    with open(configs.edgefarm_config_path, "w") as edgefarm_config_file:
+    with open(configs.edgefarm_config_json_path, "w") as edgefarm_config_file:
         json.dump(edgefarm_config, edgefarm_config_file, indent=4)    
 
 def device_install():
@@ -412,7 +501,7 @@ def device_install():
     device_info = send_api(configs.server_api_path, mac_address, e_version)
     
     edgefarm_config_check()
-        
+    
     add_key_to_edgefarm_config()
 
     # if device_info is not None:
@@ -422,7 +511,7 @@ def device_install():
         device_info = device_info[0]
 
         # file read
-        with open(configs.edgefarm_config_path, "r") as edgefarm_config_file:
+        with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
             edgefarm_config = json.load(edgefarm_config_file)
         for key, val in edgefarm_config.items():
             if key in device_info:
@@ -435,7 +524,7 @@ def device_install():
                 key_match(key, edgefarm_config, device_info)
 
         # file save
-        with open(configs.edgefarm_config_path, "w") as edgefarm_config_file:
+        with open(configs.edgefarm_config_json_path, "w") as edgefarm_config_file:
             json.dump(edgefarm_config, edgefarm_config_file, indent=4)
 
         # rtsp address set
@@ -464,14 +553,14 @@ def device_install():
     else:
         print("device_info is None!")
         # file read
-        with open(configs.edgefarm_config_path, "r") as edgefarm_config_file:
+        with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
             edgefarm_config = json.load(edgefarm_config_file)
         
         edgefarm_config["device_id"] = -1
         edgefarm_config["cam_id"] = -1
             
         # file save
-        with open(configs.edgefarm_config_path, "w") as edgefarm_config_file:
+        with open(configs.edgefarm_config_json_path, "w") as edgefarm_config_file:
             json.dump(edgefarm_config, edgefarm_config_file, indent=4)
     
 

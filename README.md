@@ -1,3 +1,16 @@
+# model 업데이트 하기
+## 1. onnx 파일 넣기
+.onnx 파일을 git repo의 `edgefarm_config/model/`에 넣기
+## 2. model_version.txt 업데이트하기
+`edgefarm_config/model/model_version.txt` 파일을 열어서 버전을 올려준다.<br>
+`model_version.txt` 파일 예시
+```
+1.0.0.0
+```
+## 3. commit 및 push 하기
+위의 과정이 완료되면 commit & push를 해준다.
+<br>
+<br>
 
 
 # 0 
@@ -84,6 +97,10 @@ bash opencv_build.sh
 ```
 bash rapidjson_build.sh
 ```
+## JetsonGPIO
+```
+bash jetsongpio_build.sh
+```
 <br>
 
 # 4. docker 권한변경
@@ -107,8 +124,4 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 # 6 auto runs service 
 ```
 bash autorun_service_registration.sh
-bash autorun_service_start.sh
-```
-```
-bash autorun_service_stop.sh
 ```
