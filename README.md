@@ -125,7 +125,7 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 ```
 bash autorun_service_registration.sh
 ```
-#99  lightdm 디스플레이에서 autologin 하는방법
+# 99  lightdm 디스플레이에서 autologin 하는방법
 sudo nano /etc/lightdm/lightdm.conf
 ```
 [SeatDefaults]
