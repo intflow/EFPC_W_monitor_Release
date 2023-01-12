@@ -125,3 +125,13 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 ```
 bash autorun_service_registration.sh
 ```
+#99  lightdm 디스플레이에서 autologin 하는방법
+sudo nano /etc/lightdm/lightdm.conf
+```
+[SeatDefaults]
+autologin-user=intflow
+autologin-user-timeout=0
+user-session=ubuntu
+# Uncomment the following, if running Unity
+#greeter-session=unity-greeter
+```
