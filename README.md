@@ -125,7 +125,8 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 ```
 bash autorun_service_registration.sh
 ```
-# 99  lightdm 디스플레이에서 autologin 하는방법
+# 99  lightdm 디스플레이모드일때
+## auto login 하는법
 sudo nano /etc/lightdm/lightdm.conf
 ```
 [SeatDefaults]
@@ -135,3 +136,6 @@ user-session=ubuntu
 # Uncomment the following, if running Unity
 #greeter-session=unity-greeter
 ```
+## screensaver 끄는법 
+sudo nano ~/.xscreensaver
+![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1aa5d4c9-fb57-4db6-bc58-d736bdf93ff1/Untitled.png)
