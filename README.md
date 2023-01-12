@@ -138,4 +138,4 @@ user-session=ubuntu
 ```
 ## screensaver 끄는법 
 sudo nano ~/.xscreensaver
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/1aa5d4c9-fb57-4db6-bc58-d736bdf93ff1/Untitled.png)
+mode off 설정 한거나 timeout , cycle 을 0으로 변경
