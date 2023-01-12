@@ -125,6 +125,44 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 ```
 bash autorun_service_registration.sh
 ```
+
+# service_down.sh
+### lightdm 디스플레이로 변경됨
+```
+#!/bin/bash
+systemctl stop networkd-dispatcher.service
+systemctl stop snapd.seeded.service
+systemctl stop snapd.socket
+systemctl stop snapd.service
+systemctl stop lightdm.service
+systemctl stop ModemManager.service
+systemctl stop apt-daily.timer
+systemctl stop apt-daily.service
+systemctl stop apt-daily-upgrade.timer
+systemctl stop apt-daily-upgrade.service
+systemctl stop fwupd.service
+systemctl stop speech-dispatcher.service
+systemctl stop wpa_supplicant.service
+
+systemctl disable networkd-dispatcher.service
+systemctl disable snapd.seeded.service
+systemctl disable snapd.socket
+systemctl disable snapd.service
+systemctl disable lightdm.service
+systemctl disable ModemManager.service
+systemctl disable apt-daily.timer
+systemctl disable apt-daily.service
+systemctl disable apt-daily-upgrade.timer
+systemctl disable apt-daily-upgrade.service
+systemctl disable fwupd.service
+systemctl disable speech-dispatcher.service
+systemctl disable wpa_supplicant.service
+
+sudo apt remove --purge -y gdm3
+sudo apt remove --purge -y lightdm
+sudo apt autoremove --purge -y
+sudo apt install ligthdm
+```
 # 99  lightdm 디스플레이모드일때
 ## auto login 하는법
 sudo nano /etc/lightdm/lightdm.conf
@@ -139,4 +177,4 @@ user-session=ubuntu
 ## screensaver 끄는법 
 sudo nano ~/.xscreensaver
 
-mode off 하거나 timeout , cycle 을 0으로 변경하면 됨
+mode off 하거나 timeout , cycle 을 0으로 변경하고 저장
