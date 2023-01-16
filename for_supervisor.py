@@ -94,6 +94,10 @@ if __name__ == "__main__":
     os.makedirs(configs.firmware_dir, exist_ok=True)
     firmwares_manager.copy_firmwares()
     
+    if is_process_running("efpc_box") == False:
+        efpc_box_process = multiprocessing.Process(target=run_blackBox)
+        efpc_box_process.start()
+    
     device_install()
 
     # 폴더 자동삭제를 위한 설정
@@ -113,11 +117,11 @@ if __name__ == "__main__":
 
     # edgefarm 구동.
     while (True):
-        # edgefarm docker 가 켜져있는지 체크
         if is_process_running("efpc_box") == False:
             efpc_box_process = multiprocessing.Process(target=run_blackBox)
             efpc_box_process.start()
             
+        # edgefarm docker 가 켜져있는지 체크
         if check_deepstream_status():
             pass
         else:
