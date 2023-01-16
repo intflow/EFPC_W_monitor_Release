@@ -1,6 +1,7 @@
 FAN_SPEED = 150
 
 API_HOST = "http://intflowserver2.iptime.org:20051"
+API_HOST2 = "http://intflowserver2.iptime.org:60080"
 
 docker_repo = "intflow/efpc_w"
 docker_image_tag_header_list = ["dev", "res"] # res 우선
@@ -35,6 +36,7 @@ not_copy_DB_config_list=[
     'reference_weight']
 
 server_api_path = "/device/info"
+access_api_path = "/device/access"
 
 last_ip = None
 

@@ -360,13 +360,40 @@ def send_api(path, mac_address, e_version):
     except Exception as ex:
         print(ex)
         return None
+def send_json_api(path, mac_address,serial_number):
+    url = configs.API_HOST2 + path + '/' 
+    content={}
+    content['mac_address']=mac_address
+    content['serial_number']=serial_number
+    print(url)
+    
+    try:
+        # response = requests.post(url, data=json.dumps(metadata))
+        response = requests.put(url, json=content)
 
+        print("response status : %r" % response.status_code)
+        if response.status_code == 200:
+            # return True
+            return response.json()
+        else:
+            # return False
+            return None
+        # return response.json()
+    except Exception as ex:
+        print(ex)
+        # return False
+        return None
 def copy_to(src_path, target_path):
     if os.path.isdir(src_path):
         subprocess.run(f"sudo cp -rfa {src_path} {target_path}", shell=True)
     else:
         subprocess.run(f"sudo cp -fa {src_path} {target_path}", shell=True)
     print(f"copy {src_path} to {target_path}")
+
+def read_serial_number():
+    with open(os.path.join(configs.local_edgefarm_config_path, "serial_number.txt"), 'r') as mvf:
+        serial_numbertxt = mvf.readline()
+    return serial_numbertxt
 
 def model_update_check(git_edgefarm_config_path):
     with open(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
@@ -493,13 +520,14 @@ def device_install():
     
     # mac address 뽑기
     mac_address = getmac.get_mac_address().replace(':','')
+    serial_number=read_serial_number()
     docker_repo = configs.docker_repo
     docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
     docker_image_tag_header = configs.docker_image_tag_header
     e_version=docker_image.replace(docker_image_tag_header+'_','').split('_')[0]
     # device 정보 받기 (api request)
-    device_info = send_api(configs.server_api_path, mac_address, e_version)
-    
+    device_info=send_json_api(configs.access_api_path, getmac.get_mac_address(),serial_number)
+    # device_info = send_api(configs.server_api_path, mac_address, e_version)
     edgefarm_config_check()
     
     add_key_to_edgefarm_config()
@@ -508,32 +536,39 @@ def device_install():
     if device_info is not None and len(device_info) > 0:
         # 정보 받아왔으면 일단 edgefarm_config 들 복사
         print(device_info)
-        device_info = device_info[0]
+        # device_info = device_info[0]
 
         # file read
         with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
             edgefarm_config = json.load(edgefarm_config_file)
-        for key, val in edgefarm_config.items():
-            if key in device_info:
-                if key in configs.not_copy_DB_config_list:
-                    continue
-                else:
-                    print(f'{key} : {val} -> {device_info[key]}')
-                    edgefarm_config[key] = device_info[key]
-            else:
-                key_match(key, edgefarm_config, device_info)
-
+        # for key, val in edgefarm_config.items():
+            # if key in device_info:
+            #     if key in configs.not_copy_DB_config_list:
+            #         continue
+            #     else:
+            #         print(f'{key} : {val} -> {device_info[key]}')
+            #         edgefarm_config[key] = device_info[key]
+            # else:
+            #     key_match(key, edgefarm_config, device_info)
+        edgefarm_config['device_id']=device_info['id']
+        edgefarm_config['end_interval']=device_info['end_interval']
+        edgefarm_config['reboot_time']=device_info['reboot_time']
+        edgefarm_config['update_time']=device_info['update_time']
+        edgefarm_config['upload_time']=device_info['upload_time']
+        edgefarm_config['linegap']=device_info['linegap']
+        edgefarm_config['linegap_position']=device_info['linegap_position']
+        edgefarm_config['cam_id']=device_info['camera_list'][0]['id']
+        rtsp_src_address=device_info['camera_list'][0]["rtsp"]
         # file save
         with open(configs.edgefarm_config_json_path, "w") as edgefarm_config_file:
             json.dump(edgefarm_config, edgefarm_config_file, indent=4)
-
         # rtsp address set
-        if 'default_rtsp' in device_info:
-            rtsp_src_address = device_info['default_rtsp']
-            print(f"\nRTSP source address : {rtsp_src_address}\n")
-            if rtsp_src_address is not None:
-                with open('/edgefarm_config/rtsp_address.txt', 'w') as rtsp_src_addr_file:
-                    rtsp_src_addr_file.write(rtsp_src_address)
+        with open('/edgefarm_config/rtsp_address.txt', 'w') as rtsp_src_addr_file:
+            rtsp_src_addr_file.write(rtsp_src_address)
+        # if 'default_rtsp' in device_info:
+        #     rtsp_src_address = device_info['default_rtsp']
+        #     print(f"\nRTSP source address : {rtsp_src_address}\n")
+        #     if rtsp_src_address is not None:
         
         # update time set
         update_time_str = ""
@@ -610,5 +645,6 @@ if __name__ == "__main__":
     # print(docker_image[:docker_image.find("_v")])
     
     # print(configs.docker_image_tag_header)
-    edgefarm_config_check()
-
+    # edgefarm_config_checpk()
+    # read_serial_number()
+    device_install()
