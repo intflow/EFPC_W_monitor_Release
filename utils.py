@@ -551,12 +551,12 @@ def device_install():
             # else:
             #     key_match(key, edgefarm_config, device_info)
         edgefarm_config['device_id']=device_info['id']
-        edgefarm_config['end_interval']=device_info['end_interval']
+        edgefarm_config['end_interval']=device_info['camera_list'][0]['end_interval']
         edgefarm_config['reboot_time']=device_info['reboot_time']
         edgefarm_config['update_time']=device_info['update_time']
         edgefarm_config['upload_time']=device_info['upload_time']
-        edgefarm_config['linegap']=device_info['linegap']
-        edgefarm_config['linegap_position']=device_info['linegap_position']
+        edgefarm_config['linegap']=device_info['camera_list'][0]['linegap']
+        edgefarm_config['linegap_position']=device_info['camera_list'][0]['linegap_position']
         edgefarm_config['cam_id']=device_info['camera_list'][0]['id']
         rtsp_src_address=device_info['camera_list'][0]["rtsp"]
         # file save
