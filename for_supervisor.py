@@ -94,11 +94,11 @@ if __name__ == "__main__":
     os.makedirs(configs.firmware_dir, exist_ok=True)
     firmwares_manager.copy_firmwares()
     
+    device_install()
+    
     if is_process_running("efpc_box") == False:
         efpc_box_process = multiprocessing.Process(target=run_blackBox)
         efpc_box_process.start()
-    
-    device_install()
 
     # 폴더 자동삭제를 위한 설정
     f = open("/edgefarm_config/Smart_Record.txt","rt")
