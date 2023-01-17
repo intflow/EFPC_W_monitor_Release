@@ -360,11 +360,12 @@ def send_api(path, mac_address, e_version):
     except Exception as ex:
         print(ex)
         return None
-def send_json_api(path, mac_address,serial_number):
+def send_json_api(path, mac_address,serial_number,firmware_version):
     url = configs.API_HOST2 + path + '/' 
     content={}
     content['mac_address']=mac_address
     content['serial_number']=serial_number
+    content['version']=firmware_version
     print(url)
     
     try:
@@ -393,8 +394,11 @@ def copy_to(src_path, target_path):
 def read_serial_number():
     with open(os.path.join(configs.local_edgefarm_config_path, "serial_number.txt"), 'r') as mvf:
         serial_numbertxt = mvf.readline()
-    return serial_numbertxt
-
+    return serial_numbertxt.split('\n')[0]
+def read_firmware_version():
+    with open(os.path.join(configs.firmware_dir, "__version__.txt"), 'r') as mvf:
+        firmware_versiontxt = mvf.readline()
+    return firmware_versiontxt.split('\n')[0]
 def model_update_check(git_edgefarm_config_path):
     with open(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
         git_model_version = mvf.readline()
@@ -521,12 +525,13 @@ def device_install():
     # mac address 뽑기
     mac_address = getmac.get_mac_address().replace(':','')
     serial_number=read_serial_number()
+    firmware_version=read_firmware_version()
     docker_repo = configs.docker_repo
     docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
     docker_image_tag_header = configs.docker_image_tag_header
     e_version=docker_image.replace(docker_image_tag_header+'_','').split('_')[0]
     # device 정보 받기 (api request)
-    device_info=send_json_api(configs.access_api_path, getmac.get_mac_address(),serial_number)
+    device_info=send_json_api(configs.access_api_path, getmac.get_mac_address(),serial_number,firmware_version)
     # device_info = send_api(configs.server_api_path, mac_address, e_version)
     edgefarm_config_check()
     
@@ -647,5 +652,5 @@ if __name__ == "__main__":
     
     # print(configs.docker_image_tag_header)
     # edgefarm_config_checpk()
-    # read_serial_number()
+    # print(read_firmware_version())
     device_install()
