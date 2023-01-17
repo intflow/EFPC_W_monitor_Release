@@ -173,7 +173,7 @@ def export_model(docker_image,docker_image_id, mode=""):
                                 + "-w /edgefarm_config/ "\
                                 + f"{docker_image_id} bash ./export_model.sh"
     else:
-        run_docker_command = "docker run -dit "\
+        run_docker_command = "docker run -di "\
                                 + "--rm "\
                                 + f"--name={configs.model_export_container_name} "\
                                 + "--net=host "\
@@ -184,7 +184,7 @@ def export_model(docker_image,docker_image_id, mode=""):
                                 + "-v /home/intflow/works:/works "\
                                 + "-w /edgefarm_config/ "\
                                 + f"{docker_image_id} bash ./export_model.sh"
-    print(run_docker_command)
+    # print(run_docker_command)
     subprocess.call(run_docker_command, shell=True)
 
 
@@ -426,7 +426,7 @@ def model_update_check(git_edgefarm_config_path):
     
     return lastest
 
-def model_update(git_edgefarm_config_path):
+def model_update(git_edgefarm_config_path, mode=""):
     # /edgefarm_config/model 디렉토리가 없으면 생성.
     if not os.path.exists(os.path.join(configs.local_edgefarm_config_path, "model")):
         os.makedirs(os.path.join(configs.local_edgefarm_config_path, "model"), exist_ok=True)
@@ -435,10 +435,10 @@ def model_update(git_edgefarm_config_path):
     copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
     docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
     # onnx to engine
-    export_model(docker_image, docker_image_id, mode="sync")
+    export_model(docker_image, docker_image_id, mode=mode)
     # 버전 파일 복사.
     copy_to(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), os.path.join(configs.local_edgefarm_config_path, "model/model_version.txt"))
-    print("\nModel Update Completed")
+    if mode == "sync" : print("\nModel Update Completed")
 
 def edgefarm_config_check():
     # /edgefarm_config 가 없으면 전체 복사
@@ -457,7 +457,7 @@ def edgefarm_config_check():
         if not os.path.exists(tmp_p):
             no_model = True
     if no_model:    
-        model_update(git_edgefarm_config_path)
+        model_update(git_edgefarm_config_path, mode='sync')
     
     # 디렉토리 내부 검색을 위한 일회용 재귀함수.
     def listdirs(rootdir):
@@ -488,7 +488,7 @@ def edgefarm_config_check():
             kill_edgefarm()
             time.sleep(1)
         # model 업데이트하기
-        model_update(git_edgefarm_config_path)  
+        model_update(git_edgefarm_config_path, mode='sync')  
     else:
         print("Lastest version model")       
 

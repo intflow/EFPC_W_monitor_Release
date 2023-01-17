@@ -14,6 +14,8 @@ from utils import *
 from for_supervisor import *
 import firmwares_manager
 
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 def autorun_service_check():
     result = subprocess.run("systemctl status ef_count_autorun.service", stdout=subprocess.PIPE, shell=True)
     res_str = result.stdout.decode()
@@ -278,7 +280,8 @@ if __name__ == "__main__":
                     control_thread_cd.notifyAll()
             elif user_command == 8:
                 with control_thread_cd:
-                    edgefarm_config_check()
+                    git_edgefarm_config_path = os.path.join(current_dir, "edgefarm_config")
+                    model_update(git_edgefarm_config_path)
                     control_thread_cd.notifyAll()
             elif user_command == 10: # show docker image list
                 with control_thread_cd:
