@@ -161,7 +161,7 @@ systemctl disable wpa_supplicant.service
 sudo apt remove --purge -y gdm3
 sudo apt remove --purge -y lightdm
 sudo apt autoremove --purge -y
-sudo apt install ligthdm
+sudo apt install lightdm
 ```
 ## lightdm 디스플레이모드일때 auto login 하는법
 sudo nano /etc/lightdm/lightdm.conf
@@ -181,5 +181,10 @@ mode off 하거나 timeout , cycle 을 0으로 변경하고 저장
 # 8. 바탕화면 파일 및 폴더들 지우기
 ```
 rm -rf /home/intflow/Desktop/*
+```
+
+# 9. 바탕화면 바꾸기
+```
+bash set_background.sh
 ```
 

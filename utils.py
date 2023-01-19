@@ -623,7 +623,9 @@ def docker_log_view():
 
 def show_docker_images_list(docker_image_head):
     subprocess.run("docker images --filter=reference=\"{}*\"".format(docker_image_head), shell=True)
- 
+    
+def set_background():
+    subprocess.Popen(f"pcmanfm --set-wallpaper=\"{os.path.join(current_dir, 'imgs/intflow_wallpaper.jpg')}\"", shell=True)
 
 def run_blackBox():
     subprocess.run("xrandr -s 640x480", shell=True)
@@ -653,4 +655,5 @@ if __name__ == "__main__":
     # print(configs.docker_image_tag_header)
     # edgefarm_config_checpk()
     # print(read_firmware_version())
-    device_install()
+    # device_install()
+    set_background()
