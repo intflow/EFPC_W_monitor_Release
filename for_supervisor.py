@@ -87,6 +87,8 @@ if __name__ == "__main__":
     fan_speed_set(configs.FAN_SPEED)
     KST_timezone_set()
     
+    efpc_box_process_list = []
+    
     docker_repo = configs.docker_repo
     docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
     docker_image_tag_header = configs.docker_image_tag_header    
@@ -114,8 +116,13 @@ if __name__ == "__main__":
     # edgefarm 구동.
     while (True):
         if is_process_running("efpc_box") == False:
-            efpc_box_process = multiprocessing.Process(target=run_blackBox)
-            efpc_box_process.start()
+            if len(efpc_box_process_list) == 0:
+                efpc_box_process_list.append(multiprocessing.Process(target=run_blackBox, daemon=True))
+                efpc_box_process_list[0].start()
+            elif not efpc_box_process_list[0].is_alive():
+                del efpc_box_process_list[0]
+                efpc_box_process_list.append(multiprocessing.Process(target=run_blackBox, daemon=True))
+                efpc_box_process_list[0].start()
             
         # edgefarm docker 가 켜져있는지 체크
         if check_deepstream_status():

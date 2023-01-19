@@ -121,12 +121,12 @@ Smart_Recoding  # 녹화할 영상의 title ex)darvi_hallway
 ```
 
 
-# 6 auto runs service 
+# 6. auto runs service 
 ```
 bash autorun_service_registration.sh
 ```
 
-# service_down.sh
+# 7. service_down.sh
 ### lightdm 디스플레이로 변경됨
 ```
 #!/bin/bash
@@ -163,8 +163,7 @@ sudo apt remove --purge -y lightdm
 sudo apt autoremove --purge -y
 sudo apt install ligthdm
 ```
-# 99  lightdm 디스플레이모드일때
-## auto login 하는법
+## lightdm 디스플레이모드일때 auto login 하는법
 sudo nano /etc/lightdm/lightdm.conf
 ```
 [SeatDefaults]
@@ -178,3 +177,9 @@ user-session=ubuntu
 sudo nano ~/.xscreensaver
 
 mode off 하거나 timeout , cycle 을 0으로 변경하고 저장
+
+# 8. 바탕화면 파일 및 폴더들 지우기
+```
+rm -rf /home/intflow/Desktop/*
+```
+
