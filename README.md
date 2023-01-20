@@ -206,3 +206,14 @@ autologin-user=intflow
 sudo nano ~/.xscreensaver
 ```
 mode 를 off로 변경 또는 timeout cycle 을 0초로 변경 
+
+## 12 . 휴지통 지우기 
+
+```
+sudo nano ~/.config/pcmanfm/LXDE/desktop-items-0.conf
+
+show_documents=0
+show_trash=0
+show_mounts=0
+
+```
