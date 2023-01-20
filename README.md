@@ -162,19 +162,7 @@ sudo apt remove --purge -y gdm3
 sudo apt remove --purge -y lightdm
 sudo apt autoremove --purge -y
 sudo apt install lightdm
-```
-## lightdm 디스플레이모드일때 auto login 하는법
-sudo nano /etc/lightdm/lightdm.conf
-```
-[SeatDefaults]
-autologin-user=intflow
-autologin-user-timeout=0
-user-session=ubuntu
-# Uncomment the following, if running Unity
-#greeter-session=unity-greeter
-```
-## screensaver 끄는법 
-sudo nano ~/.xscreensaver
+
 
 mode off 하거나 timeout , cycle 을 0으로 변경하고 저장
 
@@ -188,3 +176,33 @@ rm -rf /home/intflow/Desktop/*
 bash set_background.sh
 ```
 
+```
+# 10.  lightdm 디스플레이모드일때 auto login 하는법
+sudo nano /etc/lightdm/lightdm.conf
+```
+[SeatDefaults]
+autologin-user=intflow
+autologin-user-timeout=0
+user-session=ubuntu
+# Uncomment the following, if running Unity
+#greeter-session=unity-greeter
+```
+이 방법이 안 먹히면 
+
+```
+sudo apt install lightdm-autologin-greeter
+sudo nano /etc/lightdm/lightdm.conf.d/lightdm-autologin-greeter.conf
+```
+
+```
+[Seat:*]
+autologin-user=intflow
+```
+## 11. Xscreensaver를 이용하여 MONITOR SLEEP 끄기
+```
+**sudo apt install xscreensaver**
+
+**xscreensaver-demo 로 실행하여 xcreensaver를 한번 켜야한다.**
+sudo nano ~/.xscreensaver
+```
+mode 를 off로 변경 또는 timeout cycle 을 0초로 변경 
