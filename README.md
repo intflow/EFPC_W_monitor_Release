@@ -200,9 +200,8 @@ autologin-user=intflow
 ```
 ## 11. Xscreensaver를 이용하여 MONITOR SLEEP 끄기
 ```
-**sudo apt install xscreensaver**
-
-**xscreensaver-demo 로 실행하여 xcreensaver를 한번 켜야한다.**
+export  DISPLAY=:0
+xscreensaver-demo 로 실행하여 xcreensaver를 한번 켜야한다.**
 sudo nano ~/.xscreensaver
 ```
 mode 를 off로 변경 또는 timeout cycle 을 0초로 변경 
