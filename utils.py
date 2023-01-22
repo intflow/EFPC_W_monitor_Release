@@ -706,7 +706,7 @@ def KST_timezone_set():
 
 if __name__ == "__main__":
     # device_install()
-    set_background()
+    # set_background()
     
     model_update_check(check_only = True)
 
