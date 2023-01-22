@@ -192,6 +192,7 @@ if __name__ == "__main__":
                 else:
                     firmwares_manager.copy_firmwares()
                     device_install()
+                    model_update_check()
                     with control_thread_cd:
                         docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
                         run_docker(docker_image, docker_image_id) # docker 실행
@@ -199,8 +200,6 @@ if __name__ == "__main__":
             elif user_command == 4: # 재시작.
                 if (check_deepstream_status()): # engine 이 켜져있다면
                     print("\nRestart Edgefarm!")
-                    firmwares_manager.copy_firmwares()
-                    device_install() # api request
                     with control_thread_cd:
                         # if autorun_service_check() == "RUNNING": # autorun 이 켜져있다면
                         #     kill_edgefarm() # engine docker container 를 종료시킴. autorun 파이썬에 의해서 다시 켜지므로 결국 restart 와 마찬가지.
@@ -219,6 +218,10 @@ if __name__ == "__main__":
                         else: # autorun service 가 실행 중이 아니었다면
                             kill_edgefarm() # engine 킬.            
                             
+                            firmwares_manager.copy_firmwares()
+                            device_install() # api request
+                            model_update_check()
+                                                        
                             docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
                             run_docker(docker_image, docker_image_id) # docker 실행                        
                             
@@ -281,7 +284,7 @@ if __name__ == "__main__":
             elif user_command == 8:
                 with control_thread_cd:
                     git_edgefarm_config_path = os.path.join(current_dir, "edgefarm_config")
-                    model_update(git_edgefarm_config_path)
+                    model_update()
                     control_thread_cd.notifyAll()
             elif user_command == 10: # show docker image list
                 with control_thread_cd:

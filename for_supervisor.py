@@ -97,6 +97,8 @@ if __name__ == "__main__":
     firmwares_manager.copy_firmwares()
     
     device_install()
+    check_aws_install()
+    model_update_check()    
 
     # 폴더 자동삭제를 위한 설정
     f = open("/edgefarm_config/Smart_Record.txt","rt")

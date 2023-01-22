@@ -15,6 +15,8 @@ from pathlib import Path
 import datetime as dt
 import pytz
 from functools import cmp_to_key
+from dateutil import parser
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -152,7 +154,7 @@ def run_docker(docker_image, docker_image_id):
     
     docker_log_save_start()    
 
-def export_model(docker_image,docker_image_id, mode=""):
+def export_model(docker_image, docker_image_id, mode=""):
     if docker_image == None or docker_image_id == None:
         for i in range(10):
             print("\nNo Docker Image...\n")
@@ -395,49 +397,85 @@ def read_serial_number():
     with open(os.path.join(configs.local_edgefarm_config_path, "serial_number.txt"), 'r') as mvf:
         serial_numbertxt = mvf.readline()
     return serial_numbertxt.split('\n')[0]
+
 def read_firmware_version():
     with open(os.path.join(configs.firmware_dir, "__version__.txt"), 'r') as mvf:
         firmware_versiontxt = mvf.readline()
     return firmware_versiontxt.split('\n')[0]
-def model_update_check(git_edgefarm_config_path):
-    with open(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
-        git_model_version = mvf.readline()
-    with open(os.path.join(configs.local_edgefarm_config_path, "model/model_version.txt"), 'r') as mvf:
-        local_model_version = mvf.readline()
-    
-    print("\nmodel version (git:local)")
-    print(f'{git_model_version} : {local_model_version}\n')
-    
-    git_model_version = git_model_version.split('.')
-    local_model_version = local_model_version.split('.')
-    
-    ver_length = len(git_model_version)
-    
+
+def model_update_check(check_only = False):
+    print("Check Model version...")
     lastest = True
     
-    for i in range(ver_length):
-        g_v = int(''.join([x for x in git_model_version[i] if x.isdigit()]))
-        l_v = int(''.join([x for x in local_model_version[i] if x.isdigit()]))
-        # print(g_v, l_v)
-        if g_v <= l_v:
-            continue
-        else:
-            lastest = False
-    
-    return lastest
+    serial_number = read_serial_number()
 
-def model_update(git_edgefarm_config_path, mode=""):
+    model_file_name = f"{serial_number}/{configs.server_model_file_name}"
+    local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
+    
+    print(f"s3://{configs.server_bucket_of_model}/{model_file_name}")
+
+    try:
+        res = subprocess.check_output(f"aws s3api head-object --bucket {configs.server_bucket_of_model} --key {model_file_name}", shell=True)
+    except Exception as e:
+        print("Can not find model file in server!")
+        return False
+        
+    res_str = res.decode()
+
+    model_file_metadata = json.loads(res_str)
+    model_file_metadata["LastModified"]
+
+    last_modified_server_string = model_file_metadata["LastModified"]
+    last_modified_server = parser.parse(last_modified_server_string)
+
+    kst = pytz.timezone('Asia/Seoul')
+
+    last_modified_server = last_modified_server.astimezone(kst)
+
+    last_modified_local = os.path.getmtime(local_model_file_path)
+
+    last_modified_local = dt.datetime.fromtimestamp(last_modified_local)
+    last_modified_local = kst.localize(last_modified_local)
+
+    print(f"  server : {last_modified_server}")
+    print(f"  local  : {last_modified_local}")
+
+    #date_kst
+    if last_modified_server > last_modified_local:
+        print("Model Update required...")
+        lastest = False
+    elif last_modified_server <= last_modified_local:
+        print("Lastest version of model")
+
+    if not check_only and lastest == False:
+        # 혹시 엣지팜 켜져있으면 끄기.
+        while check_deepstream_status():
+            print("Try to kill Edgefarm Engine...")
+            kill_edgefarm()
+            time.sleep(1)
+        # model 업데이트하기
+        model_update(mode='sync')
+
+def model_update(mode=""):
     # /edgefarm_config/model 디렉토리가 없으면 생성.
     if not os.path.exists(os.path.join(configs.local_edgefarm_config_path, "model")):
         os.makedirs(os.path.join(configs.local_edgefarm_config_path, "model"), exist_ok=True)
+        
+    serial_number = read_serial_number()
     
     print("Start Model Update!")
-    copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
+    
+    model_file_name = f"{serial_number}/{configs.server_model_file_name}"
+    local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
+    
+    # 서버에서 모델 파일 복사해오기
+    # copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
+    subprocess.run(f"aws s3 cp s3://{configs.server_bucket_of_model}/{model_file_name} {local_model_file_path}", shell=True)
+    
     docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
     # onnx to engine
     export_model(docker_image, docker_image_id, mode=mode)
-    # 버전 파일 복사.
-    copy_to(os.path.join(git_edgefarm_config_path, "model/model_version.txt"), os.path.join(configs.local_edgefarm_config_path, "model/model_version.txt"))
+    # # 버전 파일 복사.
     if mode == "sync" : print("\nModel Update Completed")
 
 def edgefarm_config_check():
@@ -450,14 +488,14 @@ def edgefarm_config_check():
     git_edgefarm_config_path = os.path.join(current_dir, "edgefarm_config")
     
     # 모델 관련 파일이 있나 검사. 하나라도 없으면 복사해주고 모델 export
-    model_related_list = ['model', 'model/intflow_model.onnx', 'model/intflow_model.engine', 'model/model_version.txt']
+    model_related_list = ['model', 'model/intflow_model.onnx', 'model/intflow_model.engine']
     no_model = False
     for m_i in model_related_list:
         tmp_p = os.path.join(configs.local_edgefarm_config_path, m_i)
         if not os.path.exists(tmp_p):
             no_model = True
     if no_model:    
-        model_update(git_edgefarm_config_path, mode='sync')
+        model_update(mode='sync')
     
     # 디렉토리 내부 검색을 위한 일회용 재귀함수.
     def listdirs(rootdir):
@@ -478,19 +516,6 @@ def edgefarm_config_check():
                 listdirs(path)
                 
     listdirs(git_edgefarm_config_path) 
-    
-    # 모델 버전 체크 후 업데이트 여부 결정.
-    if model_update_check(git_edgefarm_config_path) == False:
-        print("Model Update required...")
-        # 혹시 엣지팜 켜져있으면 끄기.
-        while check_deepstream_status():
-            print("Try to kill Edgefarm Engine...")
-            kill_edgefarm()
-            time.sleep(1)
-        # model 업데이트하기
-        model_update(git_edgefarm_config_path, mode='sync')  
-    else:
-        print("Lastest version model")       
 
 def key_match(src_key, src_data, target_data):
     if src_key in configs.key_match_dict:
@@ -523,16 +548,17 @@ def device_install():
     # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
     
     # mac address 뽑기
-    mac_address = getmac.get_mac_address().replace(':','')
+    mac_address = getmac.get_mac_address()
     serial_number=read_serial_number()
     firmware_version=read_firmware_version()
     docker_repo = configs.docker_repo
     docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
     docker_image_tag_header = configs.docker_image_tag_header
     e_version=docker_image.replace(docker_image_tag_header+'_','').split('_')[0]
+    device_info=send_json_api(configs.access_api_path, mac_address, serial_number, firmware_version)
     # device 정보 받기 (api request)
-    device_info=send_json_api(configs.access_api_path, getmac.get_mac_address(),serial_number,firmware_version)
     # device_info = send_api(configs.server_api_path, mac_address, e_version)
+    
     edgefarm_config_check()
     
     add_key_to_edgefarm_config()
@@ -541,20 +567,10 @@ def device_install():
     if device_info is not None and len(device_info) > 0:
         # 정보 받아왔으면 일단 edgefarm_config 들 복사
         print(device_info)
-        # device_info = device_info[0]
 
         # file read
         with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
             edgefarm_config = json.load(edgefarm_config_file)
-        # for key, val in edgefarm_config.items():
-            # if key in device_info:
-            #     if key in configs.not_copy_DB_config_list:
-            #         continue
-            #     else:
-            #         print(f'{key} : {val} -> {device_info[key]}')
-            #         edgefarm_config[key] = device_info[key]
-            # else:
-            #     key_match(key, edgefarm_config, device_info)
         edgefarm_config['device_id']=device_info['id']
         edgefarm_config['end_interval']=device_info['camera_list'][0]['end_interval']
         edgefarm_config['reboot_time']=device_info['reboot_time']
@@ -571,10 +587,6 @@ def device_install():
         # rtsp address set
         with open('/edgefarm_config/rtsp_address.txt', 'w') as rtsp_src_addr_file:
             rtsp_src_addr_file.write(rtsp_src_address)
-        # if 'default_rtsp' in device_info:
-        #     rtsp_src_address = device_info['default_rtsp']
-        #     print(f"\nRTSP source address : {rtsp_src_address}\n")
-        #     if rtsp_src_address is not None:
         
         # update time set
         update_time_str = ""
@@ -620,6 +632,53 @@ def docker_log_view():
         print(out.decode(), end='')
 
     docker_log_end_print()
+    
+def send_ak_api(path, mac_address, serial_number):
+    url = configs.API_HOST2 + path + '/' 
+    content={}
+    content['mac_address']=mac_address
+    content['serial_number']=serial_number
+    print(url)
+    
+    try:
+        # response = requests.post(url, data=json.dumps(metadata))
+        response = requests.put(url, json=content)
+
+        print("response status : %r" % response.status_code)
+        if response.status_code == 200:
+            # return True
+            return response.json()
+        else:
+            # return False
+            return None
+        # return response.json()
+    except Exception as ex:
+        print(ex)
+        # return False
+        return None    
+    
+def check_aws_install():
+    res = os.popen('which aws').read()
+
+    if "/usr/local/bin/aws" in res:
+        print("AWS CLI installed")
+        pass
+    else:
+        print("Install AWS CLI ...")
+        subprocess.run("bash ./aws_cli_build.sh", shell=True)
+        
+    mac_address = getmac.get_mac_address()
+    serial_number=read_serial_number()
+        
+    akres = send_ak_api("/device/upload/key", mac_address, serial_number)
+
+    if not os.path.isdir("/home/intflow/.aws"):
+        os.makedirs("/home/intflow/.aws", exist_ok=True)
+        
+    subprocess.run('sudo chown intflow:intflow /home/intflow/.aws -R', shell=True)
+
+    with open("/home/intflow/.aws/credentials", "w") as f:
+        f.write(f"[default]\naws_access_key_id = {akres['access']}\naws_secret_access_key = {akres['secret']}\n")
 
 def show_docker_images_list(docker_image_head):
     subprocess.run("docker images --filter=reference=\"{}*\"".format(docker_image_head), shell=True)
@@ -646,14 +705,9 @@ def KST_timezone_set():
     print("Set TimeZone to Seoul")
 
 if __name__ == "__main__":
-    # subprocess.call(f"docker login docker.io -u \"{configs.docker_id}\" -p \"{configs.docker_pw}\"", shell=True)
-    # subprocess.run("docker logout", shell=True)
-    
-    # docker_image, docker_image_id = find_lastest_docker_image("intflow/efpc_f")
-    # print(docker_image[:docker_image.find("_v")])
-    
-    # print(configs.docker_image_tag_header)
-    # edgefarm_config_checpk()
-    # print(read_firmware_version())
     # device_install()
     set_background()
+    
+    model_update_check(check_only = True)
+
+

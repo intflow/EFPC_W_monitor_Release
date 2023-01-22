@@ -12,6 +12,9 @@ edgefarm_config_json_path = "/edgefarm_config/edgefarm_config.json"
 edgefarm_port_info_path = "/edgefarm_config/port_info.txt"
 container_name = "edgefarm_docker"
 model_export_container_name = "export_model"
+server_bucket_of_model = "intflow-models"
+server_model_file_name = "intflow_model.onnx"
+local_model_file_relative_path = "model/intflow_model.onnx"
 commit_container_name = "for_commit"
 
 key_match_dict = {
