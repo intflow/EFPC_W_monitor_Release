@@ -67,6 +67,11 @@ def control_edgefarm_monitor(control_queue, docker_repo, control_thread_cd):
                 print("\033[36m{} Update(s) available\033[0m".format(docker_update_history))
             elif docker_update_history == 0:
                 print("\033[36mThis is the latest version\033[0m")
+            if get_local_model_mtime() is not None:
+                model_mtime = get_local_model_mtime().strftime("%Y-%m-%d %H:%M:%S")
+            else:
+                model_mtime = "No model"               
+            print("\nModel's modified time : {}".format(model_mtime))
             print("\n======================================================\n")
             print("Tips.")
             print(" - To change \"\033[92mRUNNING\033[0m (Temporary or Invalid)\" to \"\033[92mRUNNING\033[0m (Background)\", 7.autostop and then 6.autostart")

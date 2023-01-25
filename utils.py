@@ -403,6 +403,21 @@ def read_firmware_version():
         firmware_versiontxt = mvf.readline()
     return firmware_versiontxt.split('\n')[0]
 
+def get_local_model_mtime():
+    local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
+    
+    if not os.path.exists(local_model_file_path):
+        return None
+    
+    kst = pytz.timezone('Asia/Seoul')
+    
+    last_modified_local = os.path.getmtime(local_model_file_path)
+
+    last_modified_local = dt.datetime.fromtimestamp(last_modified_local)
+    last_modified_local = kst.localize(last_modified_local)    
+    
+    return last_modified_local
+
 def model_update_check(check_only = False):
     print("Check Model version...")
     lastest = True
@@ -410,7 +425,6 @@ def model_update_check(check_only = False):
     serial_number = read_serial_number()
 
     model_file_name = f"{serial_number}/{configs.server_model_file_name}"
-    local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
     
     print(f"s3://{configs.server_bucket_of_model}/{model_file_name}")
 
@@ -431,11 +445,10 @@ def model_update_check(check_only = False):
     kst = pytz.timezone('Asia/Seoul')
 
     last_modified_server = last_modified_server.astimezone(kst)
-
-    last_modified_local = os.path.getmtime(local_model_file_path)
-
-    last_modified_local = dt.datetime.fromtimestamp(last_modified_local)
-    last_modified_local = kst.localize(last_modified_local)
+    last_modified_local = get_local_model_mtime()
+    if last_modified_local is None:
+        print("Can not find model file in local!")
+        return False
 
     print(f"  server : {last_modified_server}")
     print(f"  local  : {last_modified_local}")
@@ -455,6 +468,8 @@ def model_update_check(check_only = False):
             time.sleep(1)
         # model 업데이트하기
         model_update(mode='sync')
+        
+    return True
 
 def model_update(mode=""):
     # /edgefarm_config/model 디렉토리가 없으면 생성.
