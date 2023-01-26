@@ -42,6 +42,11 @@ def git_pull():
     # pull 받기
     if now_dt.hour == configs.update_hour and now_dt.minute == configs.update_min:
     # if now_dt.hour == 16 and now_dt.minute >= 38:
+    
+        configs.internet_ON = internet_check()
+        if not configs.internet_ON:
+            return    
+        
         try:
             if git_pull_done == False:
                 print("\n  git pull from remote repository")

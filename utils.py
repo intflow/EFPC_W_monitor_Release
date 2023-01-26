@@ -419,6 +419,9 @@ def get_local_model_mtime():
     return last_modified_local
 
 def model_update_check(check_only = False):
+    if not configs.internet_ON:
+        return
+     
     print("Check Model version...")
     lastest = True
     
@@ -472,20 +475,25 @@ def model_update_check(check_only = False):
     return True
 
 def model_update(mode=""):
-    # /edgefarm_config/model 디렉토리가 없으면 생성.
-    if not os.path.exists(os.path.join(configs.local_edgefarm_config_path, "model")):
-        os.makedirs(os.path.join(configs.local_edgefarm_config_path, "model"), exist_ok=True)
-        
-    serial_number = read_serial_number()
-    
-    print("Start Model Update!")
-    
-    model_file_name = f"{serial_number}/{configs.server_model_file_name}"
     local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
     
-    # 서버에서 모델 파일 복사해오기
-    # copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
-    subprocess.run(f"aws s3 cp s3://{configs.server_bucket_of_model}/{model_file_name} {local_model_file_path}", shell=True)
+    # 인터넷 안되면 monitor 에 있는 model 복사
+    if not configs.internet_ON:
+        subprocess.run(f"sudo cp {os.path.join(current_dir, 'edgefarm_config/model/intflow_model.onnx')} {local_model_file_path}")
+    else:    
+        # /edgefarm_config/model 디렉토리가 없으면 생성.
+        if not os.path.exists(os.path.join(configs.local_edgefarm_config_path, "model")):
+            os.makedirs(os.path.join(configs.local_edgefarm_config_path, "model"), exist_ok=True)
+            
+        serial_number = read_serial_number()
+        
+        print("Start Model Update!")
+        
+        model_file_name = f"{serial_number}/{configs.server_model_file_name}"
+        
+        # 서버에서 모델 파일 복사해오기
+        # copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
+        subprocess.run(f"aws s3 cp s3://{configs.server_bucket_of_model}/{model_file_name} {local_model_file_path}", shell=True)
     
     docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
     # onnx to engine
@@ -560,7 +568,9 @@ def add_key_to_edgefarm_config():
         json.dump(edgefarm_config, edgefarm_config_file, indent=4)    
 
 def device_install():
-    # 만약 이 repo 에 있는 edgefarm_config.json 의 키가 /edgefarm_config/edgefarm_config.json 에 없으면 해당 키만 추가해주기.
+    if not configs.internet_ON:
+        edgefarm_config_check()
+        return
     
     # mac address 뽑기
     mac_address = getmac.get_mac_address()
@@ -673,6 +683,9 @@ def send_ak_api(path, mac_address, serial_number):
         return None    
     
 def check_aws_install():
+    if not configs.internet_ON:
+        return
+        
     res = os.popen('which aws').read()
 
     if "/usr/local/bin/aws" in res:
@@ -686,6 +699,9 @@ def check_aws_install():
     serial_number=read_serial_number()
         
     akres = send_ak_api("/device/upload/key", mac_address, serial_number)
+    
+    if akres is None:
+        return
 
     if not os.path.isdir("/home/intflow/.aws"):
         os.makedirs("/home/intflow/.aws", exist_ok=True)
@@ -718,11 +734,25 @@ def is_process_running(process_name):
 def KST_timezone_set():
     subprocess.run("sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime", shell=True)
     print("Set TimeZone to Seoul")
+    
+def internet_check():
+    try:
+        # connect to the host -- tells us if the host is actually reachable
+        socket.create_connection(("8.8.8.8", 53), timeout=3)
+        print("Check Internet : Success")
+        return True
+    except socket.timeout:
+        print("Check Internet : Failed(Timeout)")
+        return False
+    except:
+        print("Check Internet : Failed")
+        return False 
 
 if __name__ == "__main__":
     # device_install()
     # set_background()
     
-    model_update_check(check_only = True)
+    # model_update_check(check_only = True)
+    internet_check()
 
 

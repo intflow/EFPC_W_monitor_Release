@@ -1,7 +1,7 @@
 {
     "age": 50,
-    "cam_id": 428,
-    "device_id": 70,
+    "cam_id": -1,
+    "device_id": -1,
     "direction": 0,
     "end_interval": 1800,
     "hallway_width_cm": 15.0,
