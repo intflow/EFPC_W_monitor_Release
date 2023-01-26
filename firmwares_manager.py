@@ -54,6 +54,9 @@ def git_pull():
                 # repo.remotes.release.pull() # 개발용
                 print("  Done\n")
                 
+                # efpc 종료하기
+                subprocess.run("sudo pkill -9 efpc_box", shell=True)
+                
                 copy_firmwares()
                 git_pull_done = True
         except Exception as e:
