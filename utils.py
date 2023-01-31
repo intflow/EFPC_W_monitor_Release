@@ -137,6 +137,7 @@ def run_docker(docker_image, docker_image_id):
                         + "-v /run/systemd/system:/run/systemd/system "\
                         + "-v /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket "\
                         + "-v /sys/fs/cgroup:/sys/fs/cgroup "\
+                        + "-v /home/intflow/.aws:/root/.aws "\
                         + "-w /opt/nvidia/deepstream/deepstream-6.0/sources/apps/sample_apps/ef_custompipline "\
                         + f"{docker_image_id} bash ./run_edgefarm.sh"
                         # + "{} bash".format(lastest_docker_image_info[1])

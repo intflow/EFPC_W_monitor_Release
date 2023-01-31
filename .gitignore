@@ -2,3 +2,4 @@ supervisor_log.txt
 __pycache__
 ./**/__pycache__
 *.engine
+test/
