@@ -116,17 +116,17 @@ if __name__ == "__main__":
     _time = datetime.datetime.now()
     folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK, FIRST_BOOT_REMOVER = True)
 
-    regular_internet_check = False
+    # regular_internet_check = False
 
     # edgefarm 구동.
     while (True):
-        # 1분에 한번씩 인터넷 체크
-        if _time.minute == 0 and _time.second == 0:
-            if regular_internet_check == False:
-                configs.internet_ON = internet_check()
-                regular_internet_check = True
-        else:
-            regular_internet_check = False        
+        # # 1분에 한번씩 인터넷 체크
+        # if _time.minute == 0 and _time.second == 0:
+        #     if regular_internet_check == False:
+        #         configs.internet_ON = internet_check()
+        #         regular_internet_check = True
+        # else:
+        #     regular_internet_check = False        
         
         if is_process_running("efpc_box") == False:
             if len(efpc_box_process_list) == 0:
