@@ -88,12 +88,13 @@ def port_status_check(port):
         return False
     
 def port_info_set():
-    if configs.internet_ON:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        configs.last_ip=s.getsockname()[0].split('.')[-1]
+    res = subprocess.run("route -n | grep 'UG[ \\t]' | awk '{print $2}'", shell=True, stdout=subprocess.PIPE)
+
+    if len(res.stdout) > 0:
+        hostname_tmp = subprocess.check_output("hostname -I", shell=True)
+        configs.last_ip = hostname_tmp.decode().split(' ')[0].split('.')[-1]  
     else:
-        configs.last_ip="54"
+        configs.last_ip = "54"
 
     with open(configs.edgefarm_port_info_path, 'r') as port_info_f:
         content = port_info_f.readlines()
@@ -758,5 +759,3 @@ if __name__ == "__main__":
     
     # model_update_check(check_only = True)
     internet_check()
-
-
