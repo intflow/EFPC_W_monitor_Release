@@ -88,9 +88,12 @@ def port_status_check(port):
         return False
     
 def port_info_set():
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    s.connect(("8.8.8.8", 80))
-    configs.last_ip=s.getsockname()[0].split('.')[-1]
+    if configs.internet_ON:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        configs.last_ip=s.getsockname()[0].split('.')[-1]
+    else:
+        configs.last_ip="54"
 
     with open(configs.edgefarm_port_info_path, 'r') as port_info_f:
         content = port_info_f.readlines()
