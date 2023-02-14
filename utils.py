@@ -65,8 +65,8 @@ def check_log_dir_vol():
     print("Done!\n")
     
 def log_dir_vol_manage(now_dt, LOG_DIR_CHECK):
-    if now_dt.minute == 0 and now_dt.second == 0:
-    # if now_dt.second == 0:
+    # if now_dt.minute == 0 and now_dt.second == 0:
+    if now_dt.minute == 0:
         if LOG_DIR_CHECK == False:
             check_log_dir_vol()
             LOG_DIR_CHECK = True
