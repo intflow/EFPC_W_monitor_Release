@@ -729,12 +729,27 @@ def run_blackBox():
 def is_process_running(process_name):
     # Iterate over all running processes
     for process in psutil.process_iter():
-        # Get the name of the process
-        name = process.name()
-        # Check if the process name matches the specified name
-        if name == process_name:
+        try:
+            # Get the name of the process
+            name = process.name()
+            # Check if the process name matches the specified name
+            if name == process_name:
+                return True
+        except Exception as e:
+            print(e)
             return True
+            # Ignore the process if it no longer exists
     return False
+    
+# def is_process_running(process_name):
+#     # Iterate over all running processes
+#     for process in psutil.process_iter():
+#         # Get the name of the process
+#         name = process.name()
+#         # Check if the process name matches the specified name
+#         if name == process_name:
+#             return True
+#     return False
 
 def KST_timezone_set():
     subprocess.run("sudo ln -sf /usr/share/zoneinfo/Asia/Seoul /etc/localtime", shell=True)
@@ -758,4 +773,6 @@ if __name__ == "__main__":
     # set_background()
     
     # model_update_check(check_only = True)
-    internet_check()
+    # internet_check()
+    
+    print(is_process_running('efpc_box'))
