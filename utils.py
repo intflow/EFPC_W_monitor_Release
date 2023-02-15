@@ -20,6 +20,28 @@ from dateutil import parser
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
+def max_power_mode():
+    if check_Nano():
+        subprocess.run("sudo nvpmodel -m 0", shell=True)
+        print("Max Power Mode!")
+
+def cat(path):
+    with open(path, 'r') as f:
+        return f.readline().rstrip('\x00')
+    
+def check_Nano():
+    model = ''
+    model = cat("/sys/firmware/devicetree/base/model")
+
+    if len(model) > 0:
+        print(model)
+        if "Nano" in model:
+            return True
+        else:
+            return False
+    else:
+        return False
+
 def docker_log_save_start():
     os.makedirs(configs.log_save_dir_path, exist_ok=True)
     
