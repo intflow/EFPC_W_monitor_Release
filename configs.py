@@ -15,6 +15,7 @@ model_export_container_name = "export_model"
 server_bucket_of_model = "intflow-models"
 server_model_file_name = "intflow_model.onnx"
 local_model_file_relative_path = "model/intflow_model.onnx"
+local_engine_file_relative_path = "model/intflow_model.engine"
 commit_container_name = "for_commit"
 
 key_match_dict = {

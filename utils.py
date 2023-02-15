@@ -181,7 +181,8 @@ def run_docker(docker_image, docker_image_id):
     
     docker_log_save_start()    
 
-def export_model(docker_image, docker_image_id, mode=""):
+def export_model(mode=""):
+    docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
     if docker_image == None or docker_image_id == None:
         for i in range(10):
             print("\nNo Docker Image...\n")
@@ -430,20 +431,24 @@ def read_firmware_version():
         firmware_versiontxt = mvf.readline()
     return firmware_versiontxt.split('\n')[0]
 
-def get_local_model_mtime():
-    local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
-    
-    if not os.path.exists(local_model_file_path):
+def get_mtime_datetime(target_path):
+    if not os.path.exists(target_path):
         return None
     
     kst = pytz.timezone('Asia/Seoul')
     
-    last_modified_local = os.path.getmtime(local_model_file_path)
+    last_modified = os.path.getmtime(target_path)
 
-    last_modified_local = dt.datetime.fromtimestamp(last_modified_local)
-    last_modified_local = kst.localize(last_modified_local)    
+    last_modified = dt.datetime.fromtimestamp(last_modified)
+    last_modified = kst.localize(last_modified)    
     
-    return last_modified_local
+    return last_modified
+
+def get_local_engine_mtime():
+    return get_mtime_datetime(os.path.join(configs.local_edgefarm_config_path, configs.local_engine_file_relative_path))
+
+def get_local_model_mtime():
+    return get_mtime_datetime(os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path))
 
 def model_update_check(check_only = False):
     if not configs.internet_ON:
@@ -479,9 +484,14 @@ def model_update_check(check_only = False):
     if last_modified_local is None:
         print("Can not find model file in local!")
         return False
+    last_modified_engine = get_local_engine_mtime()
+    if last_modified_engine is None:
+        print("Can not find engine file in local!")
+        return False
 
     print(f"  server : {last_modified_server}")
     print(f"  local  : {last_modified_local}")
+    print(f"  engine  : {last_modified_engine}")
 
     #date_kst
     if last_modified_server > last_modified_local:
@@ -489,7 +499,7 @@ def model_update_check(check_only = False):
         lastest = False
     elif last_modified_server <= last_modified_local:
         print("Lastest version of model")
-
+        
     if not check_only and lastest == False:
         # 혹시 엣지팜 켜져있으면 끄기.
         while check_deepstream_status():
@@ -498,6 +508,16 @@ def model_update_check(check_only = False):
             time.sleep(1)
         # model 업데이트하기
         model_update(mode='sync')
+        
+    # 만약 onnx가 engine보다 최신이라면 export 하기.
+    if last_modified_engine < last_modified_local:
+        print("Model Export required...")
+        # 혹시 엣지팜 켜져있으면 끄기.
+        while check_deepstream_status():
+            print("Try to kill Edgefarm Engine...")
+            kill_edgefarm()
+            time.sleep(1)
+        export_model('sync')
         
     return True
 
@@ -522,9 +542,8 @@ def model_update(mode=""):
         # copy_to(os.path.join(git_edgefarm_config_path, "model/intflow_model.onnx"), os.path.join(configs.local_edgefarm_config_path, "model/intflow_model.onnx"))
         subprocess.run(f"aws s3 cp s3://{configs.server_bucket_of_model}/{model_file_name} {local_model_file_path}", shell=True)
     
-    docker_image, docker_image_id = find_lastest_docker_image(configs.docker_repo)
     # onnx to engine
-    export_model(docker_image, docker_image_id, mode=mode)
+    export_model(mode=mode)
     # # 버전 파일 복사.
     if mode == "sync" : print("\nModel Update Completed")
 
