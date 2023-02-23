@@ -49,7 +49,7 @@ def docker_log_save_start():
 
     # print(now_dt.strftime("%Y%m%d_%H%M%S_log"))
     
-    file_name = now_dt.strftime("%Y%m%d_%H%M%S.log")
+    file_name = now_dt.strftime("%Y%m%d_%H%M%S_docker.log")
     file_path = os.path.join(configs.log_save_dir_path, file_name)
     
     subprocess.Popen(f"docker logs -f {configs.container_name} > {file_path} &", shell=True)
