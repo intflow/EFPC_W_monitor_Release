@@ -728,6 +728,22 @@ def send_ak_api(path, mac_address, serial_number):
         # return False
         return None    
     
+def check_libcpprest_dev():
+    if not configs.internet_ON:
+        return
+        
+    result = subprocess.run(["dpkg", "-s", "libcpprest-dev"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    if result.returncode == 0:
+        print("libcpprest-dev is installed.")
+    else:
+        print("libcpprest-dev is not installed.")
+        print("install libcpprest-dev")
+        install_libcpprest_dev()
+    
+def install_libcpprest_dev():
+    subprocess.run("sudo apt update -y && sudo apt install -y libcpprest-dev", shell=True)    
+    
 def check_aws_install():
     if not configs.internet_ON:
         return

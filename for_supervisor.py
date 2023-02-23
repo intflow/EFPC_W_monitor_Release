@@ -101,6 +101,7 @@ if __name__ == "__main__":
     device_install()
     check_aws_install()
     model_update_check()    
+    check_libcpprest_dev()
 
     # 폴더 자동삭제를 위한 설정
     f = open("/edgefarm_config/Smart_Record.txt","rt")
