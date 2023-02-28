@@ -652,6 +652,7 @@ def device_install():
         edgefarm_config['cam_id']=device_info['camera_list'][0]['id']
         rtsp_src_address=device_info['camera_list'][0]["rtsp"]
         edgefarm_config['language']=device_info['language_info']["id"]
+        edgefarm_config['weight_bias']=device_info['camera_list'][0]["weight_bias"]
         # file save
         with open(configs.edgefarm_config_json_path, "w") as edgefarm_config_file:
             json.dump(edgefarm_config, edgefarm_config_file, indent=4)
