@@ -17,8 +17,21 @@ import pytz
 from functools import cmp_to_key
 from dateutil import parser
 
+import sysv_ipc
+import struct
+import time
+
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
+
+def shm_id_get():
+    try:
+        shm_id = sysv_ipc.SharedMemory(configs.SHM_KEY, flags=sysv_ipc.IPC_CREX, mode=0o666, size=1)
+    except sysv_ipc.ExistentialError:
+        print("already exist shared memory with key")
+        shm_id = sysv_ipc.SharedMemory(configs.SHM_KEY, flags=0, mode=0o666, size=1)
+    
+    return shm_id
 
 def max_power_mode():
     if check_Nano():

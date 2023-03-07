@@ -15,6 +15,8 @@ import configs
 from utils import *
 import firmwares_manager
 
+BOOL_FORMAT = '?'
+
 def key_match(src_key, src_data, target_data):
     if src_key in configs.key_match_dict:
         target_key = configs.key_match_dict[src_key]
@@ -89,6 +91,11 @@ if __name__ == "__main__":
     fan_speed_set(configs.FAN_SPEED)
     KST_timezone_set()
     
+    shm_id = shm_id_get()
+    deepstream_check_on = True
+    shm_val = struct.pack(BOOL_FORMAT, deepstream_check_on)
+    shm_id.write(shm_val)
+    
     efpc_box_process_list = []
     
     docker_repo = configs.docker_repo
@@ -122,6 +129,9 @@ if __name__ == "__main__":
 
     # edgefarm 구동.
     while (True):
+        shm_val = shm_id.read(byte_count=1)
+        deepstream_check_on = struct.unpack(BOOL_FORMAT, shm_val)[0]
+        
         # # 1분에 한번씩 인터넷 체크
         # if _time.minute == 0 and _time.second == 0:
         #     if regular_internet_check == False:
@@ -140,12 +150,13 @@ if __name__ == "__main__":
                 efpc_box_process_list[0].start()
             
         # edgefarm docker 가 켜져있는지 체크
-        if check_deepstream_status():
-            pass
-        else:
-            # docker 실행과 동시에 edgefarm 실행됨.
-            docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
-            run_docker(docker_image, docker_image_id)
+        if deepstream_check_on:
+            if check_deepstream_status():
+                pass
+            else:
+                # docker 실행과 동시에 edgefarm 실행됨.
+                docker_image, docker_image_id = find_lastest_docker_image(docker_repo)
+                run_docker(docker_image, docker_image_id)
             
             
         # 동영상 폴더 제거 알고리즘

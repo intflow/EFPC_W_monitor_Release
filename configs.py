@@ -53,3 +53,5 @@ firmware_dir = "/home/intflow/works/firmwares"
 update_hour, update_min, update_sec = [23,50,0]
 
 internet_ON = False
+
+SHM_KEY = 3309
