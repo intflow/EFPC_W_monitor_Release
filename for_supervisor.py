@@ -87,6 +87,7 @@ def folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK, FIRS
 
 if __name__ == "__main__":
     max_power_mode()
+    disable_error_reports()
     configs.internet_ON = internet_check()    
     fan_speed_set(configs.FAN_SPEED)
     KST_timezone_set()

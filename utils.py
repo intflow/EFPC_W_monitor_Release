@@ -33,6 +33,9 @@ import time
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
+def disable_error_reports():
+    subprocess.run("sudo sed -i 's/enabled=1/enabled=0/g' /etc/default/apport", shell=True)
+
 def shm_id_get():
     try:
         shm_id = sysv_ipc.SharedMemory(configs.SHM_KEY, flags=sysv_ipc.IPC_CREX, mode=0o666, size=1)
