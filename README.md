@@ -87,7 +87,7 @@ Save and close the file.<br>
 ## python libraries
 ```
 sudo apt install -y python3-pip && \
-python3 -m pip install pip getmac natsort gitpython psutil
+python3 -m pip install pip getmac natsort gitpython psutil sysv_ipc
 ```
 ## opencv
 ```

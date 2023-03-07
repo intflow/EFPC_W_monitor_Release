@@ -17,10 +17,19 @@ import pytz
 from functools import cmp_to_key
 from dateutil import parser
 
+import importlib
+
+try:
+    importlib.import_module('sysv_ipc')
+except ImportError:
+    import subprocess
+    import sys
+    
+    subprocess.check_call([sys.executable, "-m", "pip", "install", "sysv_ipc"])
+
 import sysv_ipc
 import struct
 import time
-
 
 current_dir = os.path.dirname(os.path.abspath(__file__))
 
