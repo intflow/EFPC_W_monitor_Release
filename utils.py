@@ -546,6 +546,19 @@ def model_update_check(check_only = False):
         
     return True
 
+def send_logfile():
+    try:
+        with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
+            edgefarm_config = json.load(edgefarm_config_file)
+        device_id=edgefarm_config["device_id"]
+        
+        log_f_list=get_log_file_list(configs.log_save_dir_path)
+        for log_f in log_f_list:
+            # print(configs.log_save_dir_path+log_f)
+            subprocess.run("aws s3 mv "+configs.log_save_dir_path+log_f+" s3://"+configs.server_bucket_of_log+"/"+str(device_id)+"/"+log_f, shell=True)
+    except Exception as ex:
+        print(ex)
+
 def model_update(mode=""):
     local_model_file_path = os.path.join(configs.local_edgefarm_config_path, configs.local_model_file_relative_path)
     
@@ -857,5 +870,6 @@ if __name__ == "__main__":
     
     # model_update_check(check_only = True)
     # internet_check()
+    send_logfile()
+    # print(is_process_running('efpc_box'))
     
-    print(is_process_running('efpc_box'))

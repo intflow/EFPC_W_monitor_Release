@@ -125,7 +125,14 @@ if __name__ == "__main__":
     # ! 맨 처음 실행했을 떄 한번 체크하게 설정
     _time = datetime.datetime.now()
     folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK, FIRST_BOOT_REMOVER = True)
-
+    deepstreamCheck_thread_list = []
+    deepstreamCheck_thread_mutex = threading.Lock()
+    deepstreamCheck_thread_cd = threading.Condition()
+    # deepstreamCheck_thread = threading.Thread(target=check_deepstream_exec, name="check_deepstream_exec_thread", args=(first_booting,))
+    # deepstreamCheck_thread.start()
+    deepstreamCheck_thread_list.append(threading.Thread(target=send_logfile, name="send_logfile", daemon=True))
+    deepstreamCheck_thread_list[0].start()
+    # send_logfile()
     # regular_internet_check = False
 
     # edgefarm 구동.
@@ -162,7 +169,7 @@ if __name__ == "__main__":
             
         # 동영상 폴더 제거 알고리즘
         _time = datetime.datetime.now()
-        BOOL_HOUR_CHECK = folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK)           
+        BOOL_HOUR_CHECK = folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK)         
         LOG_DIR_CHECK = log_dir_vol_manage(_time, LOG_DIR_CHECK)
         
         # git pull
