@@ -14,7 +14,7 @@ import struct
 import configs
 from utils import *
 import firmwares_manager
-
+import logging
 BOOL_FORMAT = '?'
 
 def key_match(src_key, src_data, target_data):
@@ -41,6 +41,11 @@ def get_size(path='.'):
         return os.path.getsize(path)
     elif os.path.isdir(path):
         return get_dir_size(path)
+def get_jetson_stats():
+    cpu_usage = psutil.cpu_percent(interval=1)
+    gpu_usage = psutil.disk_usage('/').percent
+    ram_usage = psutil.virtual_memory().percent
+    logging.info(f"[{datetime.datetime.now()}] CPU 사용량: {cpu_usage}% GPU 사용량: {gpu_usage}% RAM 사용량: {ram_usage}%")
 
 def folder_value_check(_time, _path_, ALLOW_CAPACITY_RATE, BOOL_HOUR_CHECK, FIRST_BOOT_REMOVER = False):
     
@@ -141,12 +146,12 @@ if __name__ == "__main__":
         deepstream_check_on = struct.unpack(BOOL_FORMAT, shm_val)[0]
         
         # # 1분에 한번씩 인터넷 체크
-        # if _time.minute == 0 and _time.second == 0:
-        #     if regular_internet_check == False:
-        #         configs.internet_ON = internet_check()
-        #         regular_internet_check = True
-        # else:
-        #     regular_internet_check = False        
+        # if _time.second == 0:
+            # if regular_internet_check == False:
+            #     configs.internet_ON = internet_check()
+            #     regular_internet_check = True
+        get_jetson_stats()
+              
         
         if is_process_running("efpc_box") == False:
             if len(efpc_box_process_list) == 0:
@@ -175,6 +180,8 @@ if __name__ == "__main__":
         # git pull
         firmwares_manager.git_pull()
         
+        
+
         time.sleep(0.5) # 1초 지연.
 
     print("\nEdgefarm End...\n")

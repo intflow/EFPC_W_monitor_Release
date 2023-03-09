@@ -11,12 +11,12 @@ import os
 import socket
 import psutil
 from pathlib import Path
-
+import logging
 import datetime as dt
 import pytz
 from functools import cmp_to_key
 from dateutil import parser
-
+import logging
 import importlib
 
 try:
@@ -551,11 +551,20 @@ def send_logfile():
         with open(configs.edgefarm_config_json_path, "r") as edgefarm_config_file:
             edgefarm_config = json.load(edgefarm_config_file)
         device_id=edgefarm_config["device_id"]
+        reboot_time=edgefarm_config["reboot_time"]
         
         log_f_list=get_log_file_list(configs.log_save_dir_path)
         for log_f in log_f_list:
             # print(configs.log_save_dir_path+log_f)
-            subprocess.run("aws s3 mv "+configs.log_save_dir_path+log_f+" s3://"+configs.server_bucket_of_log+"/"+str(device_id)+"/"+log_f, shell=True)
+            file_mod_time = os.path.getmtime(configs.log_save_dir_path+log_f)
+            # 현재 시간과 파일 수정 시간 비교
+            current_time = time.time()
+            print(current_time - file_mod_time)
+            if current_time - file_mod_time > 3600:  # 한 시간 이상 경과한 경우
+                # os.remove(file_path)  # 파일 삭제
+                
+                logging.info(f"[{dt.datetime.now()}] S3전송 log : {configs.log_save_dir_path+log_f}")
+                subprocess.run("aws s3 mv "+configs.log_save_dir_path+log_f+" s3://"+configs.server_bucket_of_log+"/"+str(device_id)+"/"+log_f, shell=True)
     except Exception as ex:
         print(ex)
 
@@ -864,14 +873,49 @@ def internet_check():
         print("Check Internet : Failed")
         return False 
 
-def get_jetson_stats():
-    cpu_usage = psutil.cpu_percent(interval=1)
-    gpu_usage = psutil.disk_usage('/').percent
-    ram_usage = psutil.virtual_memory().percent
-    print(f'CPU 사용량: {cpu_usage}%')
-    print(f'GPU 사용량: {gpu_usage}%')
-    print(f'RAM 사용량: {ram_usage}%')
+def rtsp_speed_check():
+    import time
 
+    try:
+        import cv2
+    except ImportError:
+        subprocess.run(["pip3", "install", "opencv-python"]) # Ubuntu를 사용하는 경우
+        # subprocess.run(["yum", "install", "-y", "ffmpeg"]) # CentOS를 사용하는 경우
+        # subprocess.run(["brew", "install", "ffmpeg"]) # macOS를 사용하는 경우
+        import cv2
+    # RTSP 스트림의 URL을 입력하세요.
+    with open(configs.edgefarm_rtsp_txt_path, "r") as file:
+        for line in file:
+            rtsp_address=line.strip()
+    # RTSP 연결 시작 시간 기록
+    start_time = time.time()
+
+    # RTSP 서버와 연결
+    cap = cv2.VideoCapture(rtsp_address)
+
+    # RTSP 연결 종료 시간 기록
+    end_time = time.time()
+
+    # RTSP 연결 시간 계산 및 출력
+    connect_time = end_time - start_time
+    print(f"RTSP connect time to {rtsp_address}: {connect_time:.3f} seconds")
+
+    # 비디오 프레임 가져오기 시작 시간 기록
+    start_time = time.time()
+
+    # 비디오 프레임 가져오기
+    ret, frame = cap.read()
+
+    # 비디오 프레임 가져오기 종료 시간 기록
+    end_time = time.time()
+
+    # 비디오 프레임 가져오는 데 걸린 시간 계산 및 출력
+    read_time = end_time - start_time
+    print(f"Time to read frame from {rtsp_address}: {read_time:.3f} seconds")
+
+    # 캡처 종료 및 자원 해제
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 
@@ -881,9 +925,8 @@ if __name__ == "__main__":
     
     # model_update_check(check_only = True)
     # internet_check()
-    # send_logfile()
+    send_logfile()
     # get_jetson_stats()
-    print(get_jetson_stats())
-
+    # print(get_jetson_stats())
+    # rtsp_speed_check()
     # print(is_process_running('efpc_box'))
-    

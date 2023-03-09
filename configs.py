@@ -10,6 +10,7 @@ docker_image_tag_header = "None" # Don't Touch!! 수정하지 말고 놔두기!!
 local_edgefarm_config_path = "/edgefarm_config"
 edgefarm_config_json_path = "/edgefarm_config/edgefarm_config.json"
 edgefarm_port_info_path = "/edgefarm_config/port_info.txt"
+edgefarm_rtsp_txt_path="/edgefarm_config/rtsp_address.txt"
 container_name = "edgefarm_docker"
 model_export_container_name = "export_model"
 server_bucket_of_model = "intflow-models"
