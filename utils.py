@@ -864,12 +864,26 @@ def internet_check():
         print("Check Internet : Failed")
         return False 
 
+def get_jetson_stats():
+    cpu_usage = psutil.cpu_percent(interval=1)
+    gpu_usage = psutil.disk_usage('/').percent
+    ram_usage = psutil.virtual_memory().percent
+    print(f'CPU 사용량: {cpu_usage}%')
+    print(f'GPU 사용량: {gpu_usage}%')
+    print(f'RAM 사용량: {ram_usage}%')
+
+
+
+
 if __name__ == "__main__":
     # device_install()
     # set_background()
     
     # model_update_check(check_only = True)
     # internet_check()
-    send_logfile()
+    # send_logfile()
+    # get_jetson_stats()
+    print(get_jetson_stats())
+
     # print(is_process_running('efpc_box'))
     
